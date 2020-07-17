@@ -12,7 +12,9 @@ generate_brand_day_state_dictionary = function(data,pincodes){
 
     brand_state_naics_date = left_join(brand_state_naics_date,brand_national_naics_date)
     
-    brand_state_naics_date = brand_state_naics_date %>% mutate(proption_naics_national = (national_open-state_open)/(total_national-total_state))
+    brand_state_naics_date = brand_state_naics_date %>% 
+                                mutate(proption_naics_national = (national_open-state_open)/(total_national-total_state))
+                                
     brand_state_naics_date = brand_state_naics_date %>% select(naics_code,postal_code,brands,date,proption_naics_national)
 
     fwrite(brand_state_naics_date,"filedata/PostalBrandDictState.csv")

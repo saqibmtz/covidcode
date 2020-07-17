@@ -108,6 +108,7 @@ naics_essentail_cutoff = .30   #Percent closed threshold to identify essential s
 
     ### 3.3 Table 3 (Moderation)  #####
     source(file="code/moderation_Reg.R")
+    
 
     ### 3.4 Fixing Variable Names ####
     source(file = "code/fix_names.r")
