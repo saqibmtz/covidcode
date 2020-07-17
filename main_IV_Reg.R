@@ -1,15 +1,14 @@
-
-begin_date = ymd("2020-03-01")
-end_date = ymd("2020-04-15")
-
 ### Regression  ###
 
-data_nb = fread("data_nb.csv")
+data_nb = fread("filedata/data_nb_state.csv")
 data_nb$date = ymd(data_nb$date)
 
 
+#########################
+#### 1. OLS MDOELS   ####
+##########################
 
-# OLS MDOELS   #
+
 print(paste("Running Regression"))
 
 ## Without Controls
@@ -42,7 +41,9 @@ rm(model1,model2,model3,model4,model5)
 
 
 
-## IV MODELS ##
+#######################
+#### 2. IV MODELS #####
+#######################
 
 print("Running IV Models")
 
@@ -66,14 +67,6 @@ iv3 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip |  newfactor + po
 
 
 print("3/3")
-
-## Saving 6 models
-
-#screenreg(list(fs1,iv1,fs2,iv2,fs3,iv3),digits=3,caption = "Regression",caption.above = T,custom.model.names = c("FS","IV","FS","IV","FS","IV"),reorder.coef = c(3,4,5,2,1),custom.gof.rows=list("Fixed Effect Date-NAICS"=c("No","No","No","No","Yes","Yes"),"Fixed Effect PostalCode" = c("No","No","No","No","Yes","Yes")),reorder.gof = c(1,2,8,9,3,4,5,6,7))
-
-#texreg(list(fs1,iv1,fs2,iv2,fs3,iv3),digits=3,file= "tables/table2b.tex", caption = "Regression",caption.above = T,custom.model.names = c("Model 6","Model 7","Model 8","Model 9","Model 10","Model 11"),reorder.coef = c(3,4,5,2,1),custom.gof.rows=list("Fixed Effect Date-NAICS"=c("No","No","No","No","Yes","Yes"),"Fixed Effect PostalCode" = c("No","No","No","No","Yes","Yes")),reorder.gof = c(1,2,8,9,3,4,5,6,7),table=F)
-#stars=c(0.05)
-
 
 
 ### Saving 4 Models, excluding No controls, No FE.

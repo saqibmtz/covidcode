@@ -99,7 +99,9 @@ get_loyalty_coeff = function(data_nb){
 }
 
 
-data_nb = fread("data_nb.csv") %>% as.data.frame()
+
+
+data_nb = fread("filedata/data_nb_state.csv") %>% as.data.frame()
 data_nb$date = ymd(data_nb$date)
 
 models_local = get_hetro_coeff_3splits(data_nb)
@@ -112,10 +114,8 @@ screenreg(list(models_local[[1]],models_local[[2]],models_loyal[[1]],models_loya
 texreg(list(models_local[[1]],models_local[[2]],models_loyal[[1]],models_loyal[[2]]), file = "tables/table3.tex",digits=3, caption = "Regression",caption.above = T, custom.header = list("Model 8"=1:2,"Model 9"=3:4), custom.model.names = c("OLS","IV","OLS","IV"), custom.coef.names = c("Feb_Avg","prop_home_device_zip","Prop. Branch Est. Open","Local Visitors (Med)","Local Visitors (High)","Prop. Branch Est. Open XX Local Visitors (Med)","Prop. Branch Est. Open XX Local Visitors (High)","Prop. Branch Est. Open XX Local Visitors (Med)","Prop. Branch Est. Open XX Local Visitors (High)","Prop. Branch Est. Open","Loyal Customers","Prop. Branch Est. Open XX Loyal Customers","Prop. Branch Est. Open XX Loyal Customers"),reorder.coef=c(3,6,7,9,4,5,8,1,2),custom.gof.rows=list("Fixed Effect Date-NAICS"=c("Yes","Yes","Yes","Yes"),"Fixed Effect PostalCode" = c("Yes","Yes","Yes","Yes")),reorder.gof=c(1,2,8,9,3,4,5,6,7),table=F,custom.note = paste("\\item %stars. Note"))
 
 
-
 #3 Splits
 #screenreg(models,caption = "Moderation",caption.above = T,custom.header=list("Local Visitors(Categorical)"=1:2,"Local Visitors(Continuous)"=3:4),custom.model.names = c("OLS","IV","OLS","IV"),digits=3,custom.coef.names = c("Feb_Avg","prop_home_device_zip","proption_BigBrands_naics_postal_open","Local Visitors (Moderate)", "Local Visitors (High)","Branch Open XX Local Visitors (Moderate)","Branch Open XX Local Visitors (High)", "Branch Open XX Local Visitors (Moderate)","Branch Open XX Local Visitors (High)","pct_same_tract","Branch Open XX Local Visitors","proption_BigBrands_naics_postal_open","Branch Open XX Local Visitors"),custom.gof.rows=list("Fixed Effect Date-NAICS"=c("Yes","Yes","Yes","Yes"),"Fixed Effect PostalCode" = c("Yes","Yes","Yes","Yes")),,reorder.gof = c(1,2,8,9,3,4,5,6,7))
-
 
 #texreg(models,file = "tables/hetreo_3_withBase.tex",caption = "Moderation",caption.above = T,custom.header=list("Local Visitors(Categorical)"=1:2,"Local Visitors(Continuous)"=3:4),custom.model.names = c("OLS","IV","OLS","IV"),digits=3,custom.coef.names = c("Feb_Avg","prop_home_device_zip","proption_BigBrands_naics_postal_open","Local Visitors (Moderate)", "Local Visitors (High)","Branch Open XX Local Visitors (Moderate)","Branch Open XX Local Visitors (High)", "Branch Open XX Local Visitors (Moderate)","Branch Open XX Local Visitors (High)","pct_same_tract","Branch Open XX Local Visitors","proption_BigBrands_naics_postal_open","Branch Open XX Local Visitors"),custom.gof.rows=list("Fixed Effect Date-NAICS"=c("Yes","Yes","Yes","Yes"),"Fixed Effect PostalCode" = c("Yes","Yes","Yes","Yes")),,reorder.gof = c(1,2,8,9,3,4,5,6,7))
 

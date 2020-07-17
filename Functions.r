@@ -67,7 +67,7 @@ process_data = function(){
   naics_essential  = naics_essential  %>% filter(percent_closed<=naics_essentail_cutoff) 
   data = data %>% filter(!(naics_code %in% naics_essential$naics_code))
   
-  data$naics_code = floor(data$naics_code/(10^naics_digit))
+  data$naics_code2 = floor(data$naics_code/(10^naics_digit))
   
 
   #Creating new Columns

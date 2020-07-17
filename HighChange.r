@@ -1,10 +1,10 @@
 
 ### Identifying High-Change brands and looking at their impact ### 
-data_nb = fread("data_nb.csv") %>% as.data.frame()  
+data_nb = fread("data_nb_state.csv") %>% as.data.frame()  
 data_nb$date = ymd(data_nb$date)
 
 
-data = fread("preRegData.csv")
+data = fread("preRegData_state.csv")%>% filter(naics_code == 713)
 data_bb = data %>% filter(big_brands)
 
 data_bb$date = ymd(data_bb$date)
@@ -17,12 +17,16 @@ data_bb = left_join(data_bb,pincodes)
 bb_daily_open = data_bb %>% group_by(brands,date,naics_code) %>% summarise(prop_open_national = sum(open)/n()) %>% filter(wday(date)!=1 & wday(date)!=7)
 bb_daily_open = bb_daily_open %>% group_by(brands,naics_code) %>% mutate(prop_change_national = prop_open_national - lag(prop_open_national,order_by=date)) %>% drop_na()
 
+
+gym_daily_open = ggplot(bb_daily_open) + geom_line(aes(y = prop_open_national, x = date, group = brands, color = brands)) + xlab("Date") + ylab("Prop. Open")
+ggsave("plots/dnd/gyms_daily.jpg", gym_daily_open,height = 8, width = 15)
+
 ## Listings All - Easy Check
-bb_daily_open %>% filter(abs(prop_change_national)>0.3) %>% filter(naics_code!=722) %>% arrange(naics_code,brands,date,prop_change_national) %>% as.data.frame()
+bb_daily_open %>% filter(abs(prop_change_national)>0.3) %>% filter(naics_code!=722) %>% arrange(date,naics_code,brands,prop_change_national) %>% as.data.frame()
 
 
 ## 
-high_change = bb_daily_open %>% filter(abs(prop_change_national)>0.5) 
+high_change = bb_daily_open %>% filter(abs(prop_change_national)>0.3) 
 high_change = high_change %>% select(brands,date,naics_code) %>% mutate(highChange = T)
 
 data_bb %>% filter(brands %in% high_change$brands) %>% group_by(brands) %>% summarise(totalStores = n(),unique(naics_code))
@@ -34,7 +38,7 @@ high_change_zips = data_bb %>% filter(highChange) %>% select(postal_code,date,na
 
 for(brand in high_change$brands){
     brand = "Autograph Collection Hotels"
-    brand = "uBreakiFix"
+    brand = "Sky Zone"
     data_brand = data_bb %>% filter(brands == brand)
     brand_prop_open = data_brand %>% group_by(date) %>% filter(wday(date)!=1 & wday(date)!=7) %>% summarise(Prop_Brand_Open = sum(open)/n())
 

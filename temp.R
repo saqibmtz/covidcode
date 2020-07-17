@@ -1,11 +1,31 @@
+data_nb = data_nb %>% filter(!is.na(prop_home_device_zip))
+
+fitted_values = fs3$fitted.values %>% as.data.frame()
+names(fitted_values) = "fitted_values"
+data_nb = cbind(data_nb, fitted_values)
 
 local_iv_means = data_nb %>% group_by(postal_code) %>% summarise(prop_local = mean(proption_BigBrands_naics_postal_open),prop_fitted = mean(fitted_values))
 
-plot1 = data_nb %>% filter(!is.na(meanI)) %>% ggplot()  + stat_summary_bin(aes(x = meanI, y = proption_BigBrands_naics_postal_open),fun='mean',bins = 20,geom = "point",color="blue") + stat_summary_bin(aes(x = meanI, y = fitted_values),fun='mean',bins = 20,geom = "point",color="red") + xlab("Mean Income") + ylab("Prop. Brach Est. Open") + labs(title ="Prop. Branch Est. Open vs. Mean Income") 
+#plot1 = data_nb %>% filter(!is.na(meanI)) %>% ggplot()  + stat_summary_bin(aes(y = meanI, x = proption_BigBrands_naics_postal_open),fun='mean',bins = 20,geom = "point",color="blue")  + xlab("Prop. Brach Est. Open") + ylab("Mean Income") + labs(title ="Mean Income vs. Prop. Branch Est. Open") + ylim(0,max(data_nb$meanI,na.rm=T))
 ggsave("plots/iv/bin_IV_income.png",plot1)
 
-plot2 = data_nb %>% filter(!is.na(PercentWhite)) %>% ggplot()  + stat_summary_bin(aes(x = PercentWhite, y = proption_BigBrands_naics_postal_open),fun='mean',bins = 20,geom = "point",color="blue") + stat_summary_bin(aes(x = PercentWhite, y = fitted_values),fun='mean',bins = 20,geom = "point",color="red") + xlab("PercentWhite") + ylab("Prop. Brach Est. Open") + labs(title ="Prop Branch Est. Open vs. PercentWhite")
-ggsave("plots/iv/bin_IV_PercentWhite.png",plot2)
+plot2 = data_nb %>% filter(!is.na(meanI)) %>% ggplot() + stat_summary_bin(aes(y = meanI, x = fitted_values),fun='mean',bins = 20,geom = "point",color="red")  + xlab("Prop. Brach Est. Open")+ ylab("Mean Income")  + labs(title ="Mean Income vs. Prop. Branch Est. Open (fit)") + ylim(0,max(data_nb$meanI,na.rm=T)) 
+ggsave("plots/iv/bin_IV_income_fitted.png",plot2) 
+
+#plot3 = data_nb %>% filter(!is.na(PercentWhite)) %>% ggplot()  + stat_summary_bin(aes(y = PercentWhite, x = proption_BigBrands_naics_postal_open),fun='mean',bins = 20,geom = "point",color="blue")  + ylab("PercentWhite") + xlab("Prop. Brach Est. Open") + labs(title ="PercentWhite vs. Prop. Branch Est. Open ") + ylim(0,1)
+ggsave("plots/iv/bin_IV_PercentWhite.png",plot3)
+
+plot4 = data_nb %>% filter(!is.na(PercentWhite)) %>% ggplot()  + stat_summary_bin(aes(y = PercentWhite, x = fitted_values),fun='mean',bins = 20,geom = "point",color="red")  + ylab("PercentWhite") + xlab("Prop. Brach Est. Open") + labs(title ="PercentWhite vs. Prop. Branch Est. Open (fit)") + ylim(0,1)
+ggsave("plots/iv/bin_IV_PercentWhite_fitted.png",plot4)
+
+
+plot1 = data_nb %>% filter(!is.na(meanI)) %>% ggplot()  + stat_summary_bin(aes(y = meanI, x = BrandPostalProp),fun='mean',bins = 20,geom = "point",color="blue")  + xlab("Brand Exposure") + ylab("Mean Income") + labs(title ="Mean Income vs. Brand Exposure") + ylim(0,max(data_nb$meanI,na.rm=T))
+ggsave("plots/iv/bin_BrandPostal_income.png",plot1)
+
+plot3 = data_nb %>% filter(!is.na(PercentWhite)) %>% ggplot()  + stat_summary_bin(aes(y = PercentWhite, x = BrandPostalProp),fun='mean',bins = 20,geom = "point",color="blue")  + ylab("PercentWhite") + xlab("Brand Exposure") + labs(title ="PercentWhite vs. Brand Exposure") + ylim(0,1)
+ggsave("plots/iv/bin_BrandPostal_PercentWhite.png",plot3)
+
+
 
 # 16th July
 ## Looking at changes in IV
