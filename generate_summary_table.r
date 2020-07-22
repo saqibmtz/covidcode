@@ -16,7 +16,7 @@ generate_summary_table = function(){
     table2 <- stargazer(data_day[,cross_section_columns_non_char],summary.stat = c("n","median","mean","sd","min","max"),header = F,out = "tables/table1a.tex",title = "Summary Statistics")
 
 
-    nb_non_char = c("open","visits_by_date" ,"prop_home_device_zip" ,"proption_BigBrands_naics_postal_open","BrandPostalProp","postshelter" ) 
+    nb_non_char = c("open","visits_by_date" ,"prop_home_device_zip" ,"postshelter","proption_BigBrands_naics_postal_open","BrandPostalProp" ) 
     table4 <- stargazer(data_nb[,nb_non_char],summary.stat = c("n","median","mean","sd","min","max"),header = F,out = "tables/table1b.tex",title = "Summary Statistics")
 
     #stargazer(data_nb[,nb_non_char], type = "text", summary.stat = c("n","median","mean","sd","min","max"),header = F,title = "Summary Statistics")

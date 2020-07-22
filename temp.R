@@ -1,3 +1,69 @@
+#July 20th  Adding top 30 brands
+filein = "filedata/preRegData_state.csv"
+data = fread(filein)
+data$date = ymd(data$date)
+data_day = data %>% filter(date == begin_date)
+big_brands_all = unique(data_day$brands[data_day$big_brands]) %>% as.data.frame()
+
+top30 = fread("filedata/brandstop30.csv")
+top30$Brand[top30$Brand == "Nissan"] = "Nissan North America"
+
+sum(top30$Brand %in% big_brands_all$.)
+top30 = top30 %>% select(Brand) %>% mutate(top30 = T)
+
+data_day = left_join(data_day, top30, by = c("brands" = "Brand"))
+data_day$top30 = ifelse(is.na(data_day$top30),F,T)
+
+naics_include = data_day %>% group_by(naics_code) %>% summarise(top30_brands = sum(top30,na.rm=T)) %>% filter(top30_brands>0)
+data_day = data_day %>% filter(naics_code %in% naics_include$naics_code)
+
+top30_postal_naics = data_day %>% group_by(postal_code,naics_code) %>% summarise(top30 = ifelse(sum(top30)>0,T,F), prop_top30 = sum(top30)/n())
+top30_naics_prop = top30_postal_naics %>% group_by(naics_code) %>% summarise(mean_prop = mean(prop_top30))
+
+top30_naics_prop = left_join(top30_naics_prop,naics_codes)
+top30_naics_prop %>% arrange(desc(mean_prop))  %>% select(mean_prop,naics_code,naics_name) %>% head(20)
+
+
+
+data_nb = fread("filedata/data_nb_state.csv")
+
+#Naics Include
+#data_nb = data_nb %>% filter(naics_code %in% naics_include$naics_code)
+
+data_nb = left_join(data_nb,top30_postal_naics)
+#Postal Include
+data_nb = data_nb %>% filter(top30==T)
+
+
+dummies = dummy_cols(data_nb$top30) %>% select(-1)
+names(dummies) = c("NotTop30","Top30")
+data_nb = cbind(data_nb,dummies)
+
+dummies = dummy_cols(data_nb$top30) %>% select(-1)
+dummies = data_nb$proption_BigBrands_naics_postal_open * dummies
+names(dummies) = c("Proportion_NotTop30","Proportion_Top30")
+data_nb = cbind(data_nb,dummies)
+
+## Dummy for categorical interaction of proportion of loyal visitors * IV
+dummies = dummy_cols(data_nb$top30) %>% select(-1)
+dummies = data_nb$BrandPostalProp * dummies
+names(dummies) = c("Expsoure_NotTop30","Exposure_Top30")
+data_nb = cbind(data_nb,dummies)
+
+model2<- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip + Top30 |  newfactor + postal_code  | (  proption_BigBrands_naics_postal_open + Proportion_Top30  ~  Exposure_Top30 + BrandPostalProp) | postal_code,.)
+stargazer(model2, type="text", covariate.labels = c("Avg. Feb Visitors","Prop. Devices Home","Top30 Brand","Prop Branch Est Open","Prop Branch Est Open x Top30 Brand"))
+
+## Continuous * Continuous
+data_nb['interact'] = data_nb["prop_top30"]*data_nb$proption_BigBrands_naics_postal_open
+data_nb['interact_expsoure'] = data_nb["prop_top30"]*data_nb$BrandPostalProp
+
+model4<- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip + prop_top30 |  newfactor + postal_code  | (proption_BigBrands_naics_postal_open + interact  ~   BrandPostalProp + interact_expsoure) | postal_code,.)
+stargazer(model4, type = "text",covariate.labels = c("Avg. Feb Visitors","Prop. Devices Home", "Prop. Top30 Brands","Prop Branch Est. Open","Prop Branch Est Open x Prop. Top30 Brands"))
+ 
+
+#################################
+###############################
+
 data_nb = data_nb %>% filter(!is.na(prop_home_device_zip))
 
 fitted_values = fs3$fitted.values %>% as.data.frame()
@@ -7,16 +73,21 @@ data_nb = cbind(data_nb, fitted_values)
 local_iv_means = data_nb %>% group_by(postal_code) %>% summarise(prop_local = mean(proption_BigBrands_naics_postal_open),prop_fitted = mean(fitted_values))
 
 #plot1 = data_nb %>% filter(!is.na(meanI)) %>% ggplot()  + stat_summary_bin(aes(y = meanI, x = proption_BigBrands_naics_postal_open),fun='mean',bins = 20,geom = "point",color="blue")  + xlab("Prop. Brach Est. Open") + ylab("Mean Income") + labs(title ="Mean Income vs. Prop. Branch Est. Open") + ylim(0,max(data_nb$meanI,na.rm=T))
-ggsave("plots/iv/bin_IV_income.png",plot1)
+#ggsave("plots/iv/bin_IV_income.png",plot1)
 
 plot2 = data_nb %>% filter(!is.na(meanI)) %>% ggplot() + stat_summary_bin(aes(y = meanI, x = fitted_values),fun='mean',bins = 20,geom = "point",color="red")  + xlab("Prop. Brach Est. Open")+ ylab("Mean Income")  + labs(title ="Mean Income vs. Prop. Branch Est. Open (fit)") + ylim(0,max(data_nb$meanI,na.rm=T)) 
 ggsave("plots/iv/bin_IV_income_fitted.png",plot2) 
 
-#plot3 = data_nb %>% filter(!is.na(PercentWhite)) %>% ggplot()  + stat_summary_bin(aes(y = PercentWhite, x = proption_BigBrands_naics_postal_open),fun='mean',bins = 20,geom = "point",color="blue")  + ylab("PercentWhite") + xlab("Prop. Brach Est. Open") + labs(title ="PercentWhite vs. Prop. Branch Est. Open ") + ylim(0,1)
-ggsave("plots/iv/bin_IV_PercentWhite.png",plot3)
+
+plot3 = data_nb %>% filter(!is.na(MeanLogDev)) %>% ggplot() + stat_summary_bin(aes(y = MeanLogDev, x = fitted_values),fun='mean',bins = 20,geom = "point",color="red")  + xlab("Prop. Brach Est. Open")+ ylab("Mean Log Deviation of Income")  + labs(title ="Income Inequality vs. Prop. Branch Est. Open (fit)") + ylim(0,max(data_nb$MeanLogDev,na.rm=T)) 
+ggsave("plots/iv/bin_IV_incomeIneq_fitted.png",plot3) 
+
 
 plot4 = data_nb %>% filter(!is.na(PercentWhite)) %>% ggplot()  + stat_summary_bin(aes(y = PercentWhite, x = fitted_values),fun='mean',bins = 20,geom = "point",color="red")  + ylab("PercentWhite") + xlab("Prop. Brach Est. Open") + labs(title ="PercentWhite vs. Prop. Branch Est. Open (fit)") + ylim(0,1)
 ggsave("plots/iv/bin_IV_PercentWhite_fitted.png",plot4)
+
+plot5 = data_nb %>% filter(!is.na(PercentAsian)) %>% ggplot()  + stat_summary_bin(aes(y = PercentAsian, x = fitted_values),fun='mean',bins = 20,geom = "point",color="red")  + ylab("PercentAsian") + xlab("Prop. Brach Est. Open") + labs(title ="PercentAsian vs. Prop. Branch Est. Open (fit)") + ylim(0,1)
+ggsave("plots/iv/bin_IV_PercentAsian_fitted.png",plot5)
 
 
 plot1 = data_nb %>% filter(!is.na(meanI)) %>% ggplot()  + stat_summary_bin(aes(y = meanI, x = BrandPostalProp),fun='mean',bins = 20,geom = "point",color="blue")  + xlab("Brand Exposure") + ylab("Mean Income") + labs(title ="Mean Income vs. Brand Exposure") + ylim(0,max(data_nb$meanI,na.rm=T))
@@ -95,7 +166,7 @@ ggsave("plots/iv/naics_IV_bottom.png",p2,width=10,height=8)
 
 
 
-data_nb = fread("data_nb.csv") %>% as.data.frame()  
+data_nb = fread("filedata/data_nb_state.csv") %>% as.data.frame()  
 data_nb$date = ymd(data_nb$date)
     
 
@@ -104,7 +175,7 @@ data_nb$open3 = ifelse(data_nb$visits_by_date>5,T,F)
 
 iv_open2 <- data_nb %>% felm(open2 ~  Feb_Avg + prop_home_device |  newfactor + postal_code | (proption_BigBrands_naics_postal_open  ~ BrandPostalProp) | postal_code,.)
 
-iv_open1 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device |  newfactor + postal_code | (proption_BigBrands_naics_postal_open  ~ BrandPostalProp) | postal_code,.)
+#iv_open1 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device |  newfactor + postal_code | (proption_BigBrands_naics_postal_open  ~ BrandPostalProp) | postal_code,.)
 
 iv_open3 <- data_nb %>% felm(open3 ~  Feb_Avg + prop_home_device |  newfactor + postal_code | (proption_BigBrands_naics_postal_open  ~ BrandPostalProp) | postal_code,.)
 

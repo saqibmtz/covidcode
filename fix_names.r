@@ -8,6 +8,7 @@ fix_names = function(filein){
     textin = gsub("Feb_Avg","Avg. February Traffic",textin)
     textin = gsub("prop_home_device_zip","Prop. Devices At Home",textin)
     textin = gsub("postshelterTRUE","Shelter\\ In\\ Place",textin)
+    textin = gsub("date","Date",textin)
 
     textin = gsub("proption\\\\_BigBrands\\\\_naics\\\\_postal\\\\_Open","Prop.\\ Branch\\ Est.\\ Open",textin)
     textin = gsub("\\`","",textin)
@@ -41,11 +42,12 @@ fix_names_summary = function(filein){
     textin = gsub("Feb_Avg","Avg. February Traffic",textin)
     textin = gsub("prop_home_device_zip","Prop. Devices At Home",textin)
     textin = gsub("postshelterTRUE","Shelter\\ In\\ Place",textin)
+    textin = gsub("loyal","Prop.\\ Loyal\\ Customers",textin)
 
     textin = gsub("proption\\\\_BigBrands\\\\_naics\\\\_postal\\\\_Open","Prop.\\ Branch\\ Est.\\ Open",textin)
     textin = gsub("Feb\\\\_Avg","Avg.\\ February\\ Traffic",textin)
     textin = gsub("prop\\\\_home\\\\_device\\\\_zip","Prop.\\ Devices\\ At\\ Home",textin)
-    textin = gsub("pct\\\\_visits\\\\_same\\\\_cbg","Proportion\\ Local\\ Customers", textin)
+    textin = gsub("pct\\\\_visits\\\\_same\\\\_cbg","Prop.\\ Local\\ Customers", textin)
     textin = gsub("visits\\\\_by\\\\_date","Daily\\ Visits" ,textin)
     textin = gsub("Num. obs.","Observations" ,textin)
     textin = gsub("Num. groups\\:" ,"Number of Groups\\:",textin)
