@@ -28,6 +28,7 @@ fix_names = function(filein){
     textin = gsub("pct\\\\_same\\\\_tract","Prop. Local Customers",textin)    
 
     textin = textin[-grep(pattern = "proj", x = textin)]
+    textin = textin[-grep(pattern = "p-value", x = textin)]
 
     writeLines(textin,filein)
 }

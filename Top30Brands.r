@@ -44,6 +44,7 @@ naics_postal= data %>% filter(big_brands) %>%
 data = left_join(data,naics_postal)
 
 fwrite(data, "temp/preRegData_state_top30.csv")
+#data = fread("temp/preRegData_state_top30.csv")
 
 data$proption_BigBrands_naics_postal_open_Top30 = data$proption_BigBrands_naics_postal_open_Top30 %>% replace_na(0)
 data$proption_BigBrands_naics_postal_open_NonTop30 = data$proption_BigBrands_naics_postal_open_NonTop30 %>% replace_na(0)
@@ -57,12 +58,19 @@ data_nb = data_nb %>% filter(!is.na(BrandPostalProp))
 data_nb['newfactor'] = paste(data_nb$date,data_nb$naics_code)
 data_nb$newfactor = ifelse(is.na(data_nb$naics_code),NA,data_nb$newfactor)
 
+model5 <- data_nb %>% felm(open ~ proption_BigBrands_naics_postal_open_Top30 + proption_BigBrands_naics_postal_open_NonTop30 + Feb_Avg + prop_home_device_zip | newfactor + postal_code | 0 |postal_code,.)
+
+stargazer(model5,type = "text")
 
 fs3_top30 <- data_nb %>% felm(proption_BigBrands_naics_postal_open_Top30  ~ BrandPostalProp_Top30 + BrandPostalProp_NonTop30 + Feb_Avg + prop_home_device_zip| newfactor + postal_code | 0 | postal_code,.)
 
 fs3_NonTop30 <- data_nb %>% felm(proption_BigBrands_naics_postal_open_NonTop30  ~ BrandPostalProp_Top30 + BrandPostalProp_NonTop30 + Feb_Avg + prop_home_device_zip| newfactor + postal_code | 0 | postal_code,.)
 
 iv3 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip |  newfactor + postal_code | (proption_BigBrands_naics_postal_open_Top30| proption_BigBrands_naics_postal_open_NonTop30 ~ BrandPostalProp_Top30 + BrandPostalProp_NonTop30) | postal_code,.)
+
+iv4 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip |  newfactor + postal_code | (proption_BigBrands_naics_postal_open_Top30 ~ BrandPostalProp_Top30 ) | postal_code,.)
+
+iv3 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip |  newfactor + postal_code | (proption_BigBrands_naics_postal_open_NonTop30 ~ BrandPostalProp_NonTop30) | postal_code,.)
 
 stargazer(fs3_top30, fs3_NonTop30, type = "text", dep.var.caption = "Prop. Branch Est. Open", column.labels = c("Top 30", "Other"), dep.var.labels   = c("",""),  covariate.labels = c("Brand Exposure Top 30","Brand Exposure Other"," Avg. Feb Visits"," Prop. Devices At Home"))
 

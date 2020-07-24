@@ -11,8 +11,7 @@ brand_national_naics_date = data_bb %>% group_by(naics_code,date,brands) %>% sum
 brand_state_naics_date = left_join(brand_state_naics_date,brand_national_naics_date)
     
 brand_state_naics_date = brand_state_naics_date %>% 
-                            mutate(proption_naics_national2 = (national_open2-state_open2)/(total_national-total_state),
-                                   proption_naics_national3 = (national_open3-state_open3)/(total_national-total_state))
+                            mutate(proption_naics_national2 = (national_open2-state_open2)/(total_national-total_state),proption_naics_national3 = (national_open3-state_open3)/(total_national-total_state))
                                 
 brand_state_naics_date = brand_state_naics_date %>% select(naics_code,postal_code,brands,date,proption_naics_national2,proption_naics_national3)
 
@@ -33,6 +32,9 @@ data = left_join(data,naics_postal)
 rm(naics_postal)
 fwrite(data,"temp/preRegData_open2_open3.csv")
 
+data = fread("temp/preRegData_open2_open3.csv")
+data$date = ymd(data$date)
+
 data_nb = data %>% filter(BrandNational==0)
 rm(data)
 
@@ -49,12 +51,12 @@ iv_open2 <- data_nb %>% felm(open2 ~  Feb_Avg + prop_home_device_zip |  newfacto
 fs_open3 <- data_nb %>% felm(proption_BigBrands_naics_postal_open3  ~ BrandPostalProp3 + Feb_Avg + prop_home_device_zip| newfactor + postal_code | 0 | postal_code,.)
 iv_open3 <- data_nb %>% felm(open3 ~  Feb_Avg + prop_home_device_zip |  newfactor + postal_code | (proption_BigBrands_naics_postal_open3  ~ BrandPostalProp3) | postal_code,.)
 
-screenreg(list(fs_open2,iv_open2,fs_open3,iv_open3),digits=3,caption = "Regression",caption.above = T,custom.header = list("Model 10" = 1:2, "Model 11" = 3:4),custom.model.names = c("First Stage","IV","First Stage","IV"),custom.coef.names = c("BrandPostalProp","Feb_Avg","prop_home_device_zip","proption_BigBrands_naics_postal_open","BrandPostalProp","proption_BigBrands_naics_postal_open"),reorder.coef=c(4,1,2,3),custom.gof.rows = list("Fixed Effect Date-NAICS"=c("Yes","Yes","Yes","Yes"),"Fixed Effect PostalCode" = c("Yes","Yes","Yes","Yes")), reorder.gof = c(1,2,8,9,3,4,5,6,7),table=F)
+screenreg(list(fs_open2,iv_open2,fs_open3,iv_open3),digits=3,caption = "Regression",caption.above = T,custom.header = list("Model 10" = 1:2, "Model 11" = 3:4),custom.model.names = c("First Stage","IV","First Stage","IV"),custom.coef.names = c("BrandPostalProp","Feb_Avg","prop_home_device_zip","proption_BigBrands_naics_postal_open","BrandPostalProp","proption_BigBrands_naics_postal_open"),reorder.coef=c(4,1,2,3),custom.gof.rows = list("Fixed Effect Date-NAICS"=c("Yes","Yes","Yes","Yes"),"Fixed Effect PostalCode" = c("Yes","Yes","Yes","Yes")), include.fstatistic = T,table=F)
 
-texreg(list(fs_open2,iv_open2,fs_open3,iv_open3),digits=3,file = "tables/table_appendex_open.tex",caption = "Regression",caption.above = T,custom.header = list("Model 10" = 1:2, "Model 11" = 3:4),custom.model.names = c("First Stage","IV","First Stage","IV"),custom.coef.names = c("BrandPostalProp","Feb_Avg","prop_home_device_zip","proption_BigBrands_naics_postal_open","BrandPostalProp","proption_BigBrands_naics_postal_open"),reorder.coef=c(4,1,2,3),custom.gof.rows = list("Fixed Effect Date-NAICS"=c("Yes","Yes","Yes","Yes"),"Fixed Effect PostalCode" = c("Yes","Yes","Yes","Yes")), reorder.gof = c(1,2,8,9,3,4,5,6,7),table=F)
+texreg(list(fs_open2,iv_open2,fs_open3,iv_open3),digits=3,file = "tables/table_appendex_open.tex",caption = "Regression",caption.above = T,custom.header = list("Model 10" = 1:2, "Model 11" = 3:4),custom.model.names = c("First Stage","IV","First Stage","IV"),custom.coef.names = c("BrandPostalProp","Feb_Avg","prop_home_device_zip","proption_BigBrands_naics_postal_open","BrandPostalProp","proption_BigBrands_naics_postal_open"),reorder.coef=c(4,1,2,3),custom.gof.rows = list("Fixed Effect Date-NAICS"=c("Yes","Yes","Yes","Yes"),"Fixed Effect PostalCode" = c("Yes","Yes","Yes","Yes")), include.fstatistic = T,table=F)
 
 source(file = "code/fix_names.r")
-fix_names_summary("tables/table_appendex_open.tex")
+fix_names("tables/table_appendex_open.tex")
 
 
 

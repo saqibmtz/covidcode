@@ -1,3 +1,46 @@
+## July 24th paper figure descriptives
+filein = "filedata/preRegData_state.csv"
+data = fread(filein)
+
+data = left_join(data,pincodes, by = c("postal_code"="zip"))
+
+gym_naics = 713
+counties = c(74012,74146)
+figure_date = ymd("2020-03-24")
+
+data = data %>% filter(naics_code==gym_naics)
+data$date = ymd(data$date)
+
+data_begindate = data %>% filter(date == begin_date)
+
+county_data = data %>% filter(postal_code %in% counties)
+county_data_begindate = county_data %>% filter(date == figure_date)
+
+county_data_begindate %>% group_by(postal_code, brands,naics_code_6digit) %>% summarise(total = n())
+
+county_data_date = county_data %>% filter(date == figure_date)
+county_data_date %>% select(postal_code,BrandPostalProp,proption_BigBrands_naics_postal_open) %>% arrange(postal_code) %>% distinct()
+county_data_date %>% filter(BrandNational==1) %>% select(postal_code,brands,open)
+
+data_bb = data %>% filter(big_brands) %>% filter(brands %in% c("CrossFit","Planet Fitness"))
+data_bb %>% filter(state_id!="OK") %>% filter(date == figure_date) %>% group_by(brands) %>% summarise(total_open = sum(open),total_stores= n(), pct_open = sum(open)/n())
+data_bb %>% filter(state_id=="OK") %>% filter(date == figure_date) %>% group_by(brands) %>% summarise(total_open = sum(open),total_stores= n(), pct_open = sum(open)/n())
+
+data_bb %>% filter(date == figure_date) %>% group_by(brands) %>% summarise(total_open = sum(open),total_stores= n(), pct_open = sum(open)/n())
+
+
+#bb_daily_open = data_bb %>% group_by(brands,date,naics_code) %>% summarise(prop_open_national = sum(open)/n()) %>% filter(wday(date)!=1 & wday(date)!=7)
+bb_daily_open = data_bb %>% group_by(brands,date,naics_code) %>% summarise(prop_open_national = sum(open)/n())
+bb_daily_open = bb_daily_open %>% group_by(brands,naics_code) %>% mutate(prop_change_national = prop_open_national - lag(prop_open_national,order_by=date)) %>% drop_na()
+
+bb_daily_open = bb_daily_open %>% filter(brands %in% c("CrossFit","Planet Fitness"))
+bb_daily_open %>% pivot_wider(id_cols = c(date,naics_code),names_from = brands, values_from = c("prop_open_national","prop_change_national")) %>% as.data.frame() %>% head(46)
+
+bb_daily_open %>% filter(date >= ymd("2020-03-13") & (date <= ymd("2020-04-01"))) %>% arrange(brands,date) %>% as.data.frame()
+p1 = ggplot(bb_daily_open) + geom_line(aes(x = date, y = prop_open_national, group = brands, color = brands)) + xlab("Date") + ylab("Prop. Open")
+ggsave("plots/iv/gyms.png",p1)
+
+
 #July 20th  Adding top 30 brands
 filein = "filedata/preRegData_state.csv"
 data = fread(filein)

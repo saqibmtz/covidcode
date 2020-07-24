@@ -32,10 +32,10 @@ print(paste("Done 5/5"))
 
 #screenreg(list(model1,model2,model3,model4,model5))
 
-screenreg(list(model1,model2,model3,model4,model5),caption = "Regression",caption.above = T,custom.header=list("Open"=1:5),digits=3,reorder.coef=c(2,3,4,5,1),custom.gof.rows=list("Fixed Effect NAICS"=c("No","No","Yes","Yes","No"),"Fixed Effect PostalCode" = c("No","No","Yes","Yes","Yes"), "Fixed Effect Date"=c("No","No","No","Yes","No"),"Fixed Effect Date XX NAICS"=c("No","No","No","No","Yes")),reorder.gof = c(1,2,3,4,10,11,12,13,5,6,7,8,9))
+screenreg(list(model1,model2,model3,model4,model5),caption = "Regression",caption.above = T,custom.header=list("Open"=1:5),digits=3,reorder.coef=c(2,3,4,5,1),custom.gof.rows=list("Fixed Effect NAICS"=c("No","No","Yes","Yes","No"),"Fixed Effect PostalCode" = c("No","No","Yes","Yes","Yes"), "Fixed Effect Date"=c("No","No","No","Yes","No"),"Fixed Effect Date XX NAICS"=c("No","No","No","No","Yes")),include.fstatistic = T)
 
 
-texreg(list(model1,model2,model3,model4,model5),file = "tables/table2a.tex",caption = "Regression",caption.above = T,custom.header=list("Local Est. Open"=1:5),digits=3,reorder.coef=c(2,3,4,5,1),custom.gof.rows=list("Fixed Effect NAICS"=c("No","No","Yes","Yes","No"),"Fixed Effect PostalCode" = c("No","No","Yes","Yes","Yes"), "Fixed Effect Date"=c("No","No","No","Yes","No"),"Fixed Effect Date XX NAICS"=c("No","No","No","No","Yes")),reorder.gof = c(1,2,3,4,10,11,12,13,5,6,7,8,9),table=F)
+texreg(list(model1,model2,model3,model4,model5),file = "tables/table2a.tex",caption = "Regression",caption.above = T,custom.header=list("Local Est. Open"=1:5),digits=3,reorder.coef=c(2,3,4,5,1),custom.gof.rows=list("Fixed Effect NAICS"=c("No","No","Yes","Yes","No"),"Fixed Effect PostalCode" = c("No","No","Yes","Yes","Yes"), "Fixed Effect Date"=c("No","No","No","Yes","No"),"Fixed Effect Date XX NAICS"=c("No","No","No","No","Yes")),include.fstatistic = T,table=F)
 
 rm(model1,model2,model3,model4,model5)
 
@@ -71,8 +71,8 @@ print("3/3")
 
 ### Saving 4 Models, excluding No controls, No FE.
 
-screenreg(list(fs2,iv2,fs3,iv3),digits=3,caption = "Regression",caption.above = T,custom.header = list("Model 6" = 1:2, "Model 7" = 3:4),custom.model.names = c("First Stage","IV","First Stage","IV"),reorder.coef=c(6,2,3,4,5,1),custom.gof.rows = list("Fixed Effect Date-NAICS"=c("No","No","Yes","Yes"),"Fixed Effect PostalCode" = c("No","No","Yes","Yes")), reorder.gof = c(1,2,8,9,3,4,5,6,7),table=F)
+screenreg(list(fs2,iv2,fs3,iv3),digits=3,caption = "Regression",caption.above = T,custom.header = list("Model 6" = 1:2, "Model 7" = 3:4),custom.model.names = c("First Stage","IV","First Stage","IV"),reorder.coef=c(6,2,3,4,5,1),custom.gof.rows = list("Fixed Effect Date-NAICS"=c("No","No","Yes","Yes"),"Fixed Effect PostalCode" = c("No","No","Yes","Yes")),include.fstatistic = T,table=F,)
 
-texreg(list(fs2,iv2,fs3,iv3),digits=3,file = "tables/table2b.tex",caption = "Regression",caption.above = T,custom.header = list("Model 6" = 1:2, "Model 7" = 3:4),custom.model.names = c("First Stage","IV","First Stage","IV"),reorder.coef=c(6,2,3,4,5,1),custom.gof.rows = list("Fixed Effect Date-NAICS"=c("No","No","Yes","Yes"),"Fixed Effect PostalCode" = c("No","No","Yes","Yes")), reorder.gof = c(1,2,8,9,3,4,5,6,7),table=F,custom.note = "\\item %stars. Note")
+texreg(list(fs2,iv2,fs3,iv3),digits=3,file = "tables/table2b.tex",caption = "Regression",caption.above = T,custom.header = list("Model 6" = 1:2, "Model 7" = 3:4),custom.model.names = c("First Stage","IV","First Stage","IV"),reorder.coef=c(6,2,3,4,5,1),custom.gof.rows = list("Fixed Effect Date-NAICS"=c("No","No","Yes","Yes"),"Fixed Effect PostalCode" = c("No","No","Yes","Yes")), include.fstatistic = T,table=F,custom.note = "\\item %stars. Note")
 
 rm(fs1,fs2,fs3,iv1,iv2,iv3)
