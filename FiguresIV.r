@@ -38,10 +38,10 @@ plot3 = data_nb %>% filter(!is.na(MeanLogDev)) %>% ggplot() + stat_summary_bin(a
 ggsave("plots/iv/bin_IV_incomeIneq_IV.png",plot3) 
 
 
-plot4 = data_nb %>% filter(!is.na(PercentWhite)) %>% ggplot()  + stat_summary_bin(aes(y = PercentWhite, x = BrandPostalProp),fun='mean',bins = 20,geom = "point",color="red")  + ylab("Percentage White") + xlab("National Chain Opening Exposure") + labs(title ="Percentage White vs. National Chain Opening Exposure") + ylim(0,1) + theme_bw()
+plot4 = data_nb %>% filter(!is.na(PercentWhite)) %>% ggplot()  + stat_summary_bin(aes(y = PercentWhite, x = BrandPostalProp),fun='mean',bins = 20,geom = "point",color="red")  + ylab("Prop. White") + xlab("National Chain Opening Exposure") + labs(title ="Prop. White vs. National Chain Opening Exposure") + ylim(0,1) + theme_bw()
 ggsave("plots/iv/bin_IV_PercentWhite_IV.png",plot4)
 
-plot5 = data_nb %>% filter(!is.na(PercentAsian)) %>% ggplot()  + stat_summary_bin(aes(y = PercentAsian, x = BrandPostalProp),fun='mean',bins = 20,geom = "point",color="red")  + ylab("Percentage Asian") + xlab("National Chain Opening Exposure") + labs(title ="Percentage Asian vs. National Chain Opening Exposure") + ylim(0,1) + theme_bw()
+plot5 = data_nb %>% filter(!is.na(PercentAsian)) %>% ggplot()  + stat_summary_bin(aes(y = PercentAsian, x = BrandPostalProp),fun='mean',bins = 20,geom = "point",color="red")  + ylab("Prop. Asian") + xlab("National Chain Opening Exposure") + labs(title ="Prop. Asian vs. National Chain Opening Exposure") + ylim(0,1) + theme_bw()
 ggsave("plots/iv/bin_IV_PercentAsian_IV.png",plot5)
 
 plots = grid.arrange(plot2,plot3,plot4,plot5,ncol=2)

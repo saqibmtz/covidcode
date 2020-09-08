@@ -41,7 +41,7 @@ naics_essentail_cutoff = .30   #Percent closed threshold to identify essential s
     data = data[,-25] %>% select(safegraph_place_id,date,brands,postal_code,
                             naics_code,County_Shelter_In_Place_Policy,feb_daywise_avg,visits_by_date,closed_or_not,
                             completely_home_device_count,device_count,CBGFIPS,pct_visits_same_cbg,pct_same_tract,
-                            loyalty,total_brands_visited_x)
+                            loyalty,total_brands_visited_x,countyName)
 
     data$date = ymd(data$date)
     data = data %>% filter(date>=begin_date & date<=end_date)
@@ -67,6 +67,7 @@ naics_essentail_cutoff = .30   #Percent closed threshold to identify essential s
     ### 2.5 Creating Dictionary for Brand-Date-Postal Openings #####
     source(file = "code/generate_brand_day_state_dictionary.r")
     BrandNaicsPostal_prop = generate_brand_day_state_dictionary(data,pincodes)
+    #BrandNaicsPostal_prop = fread("filedata/PostalBrandDictState.csv")   # Read the saved version
     
 
     #### 2.6  Generating Instrument Variable  #######
@@ -89,7 +90,7 @@ naics_essentail_cutoff = .30   #Percent closed threshold to identify essential s
     rm(data)
 
 
-    #### 2.8 Subsetting to include Local Establishments Only and creating Date x NAICS interaction
+    #### 2.8 Subsetting to include Local Establishments Only and creating Date x NAICS, Date x County interactions
     source(file = "code/generate_nb.r")
     generate_nb()
 

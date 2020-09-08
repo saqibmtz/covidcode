@@ -1,8 +1,19 @@
+## July 28th Adding county*date fixed effects
+pincodes = fread("rawdata/zip_code_database_new.csv") %>% select(zip,county,state)
+data_nb = left_join(data_nb, pincodes, by = c("postal_code" = "zip"))
+
+data_nb['countyDate'] = paste(data_nb$county,data_nb$date)
+
+
+
+
 ## July 24th paper figure descriptives
 filein = "filedata/preRegData_state.csv"
 data = fread(filein)
 
-data = left_join(data,pincodes, by = c("postal_code"="zip"))
+zipcode = fread("rawdata/zip_code_database_new.csv") %>% select(zip,state)
+
+data = left_join(data,pincodes, by = c("postal_code"="zip")) %>% filter(!is.na(state_name))
 
 gym_naics = 713
 counties = c(74012,74146)
@@ -28,7 +39,13 @@ data_bb %>% filter(state_id=="OK") %>% filter(date == figure_date) %>% group_by(
 
 data_bb %>% filter(date == figure_date) %>% group_by(brands) %>% summarise(total_open = sum(open),total_stores= n(), pct_open = sum(open)/n())
 
+national_open = data_bb%>% filter(date == figure_date) %>% group_by(brands,date) %>% summarise(nat_total=n(),nat_open=sum(open))
 
+state_open = data_bb%>% filter(date == figure_date) %>% group_by(brands,date,state_id) %>% summarise(state_total=n(),state_open=sum(open))
+
+state_open = left_join(national_open,state_open)
+state_open = state_open %>% mutate(exclude_state_open = nat_open - state_open,exclude_state_tot = nat_total-state_total)
+state_open %>% filter(state_id =="OK") %>% as.data.frame()
 #bb_daily_open = data_bb %>% group_by(brands,date,naics_code) %>% summarise(prop_open_national = sum(open)/n()) %>% filter(wday(date)!=1 & wday(date)!=7)
 bb_daily_open = data_bb %>% group_by(brands,date,naics_code) %>% summarise(prop_open_national = sum(open)/n())
 bb_daily_open = bb_daily_open %>% group_by(brands,naics_code) %>% mutate(prop_change_national = prop_open_national - lag(prop_open_national,order_by=date)) %>% drop_na()

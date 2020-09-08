@@ -44,25 +44,25 @@ get_hetro_coeff_3splits <- function(data_in, percentile_based = F){
 
 
     #Model1 OLS Continuous * Categorical
-    model1 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip +  proption_BigBrands_naics_postal_open + Visitors_Mid + Visitors_High  + Proportion_Mid + Proportion_High|  newfactor + postal_code | 0 | postal_code,.)
+    model1 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip +  proption_BigBrands_naics_postal_open + Visitors_Mid + Visitors_High  + Proportion_Mid + Proportion_High|  newfactor + postal_code + date | 0 | countyName,.)
 
     print(paste("Done 1/4"))
 
     #Model2 OLS Conitnuous * Continuous
-    model2 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip +  proption_BigBrands_naics_postal_open + pct_same_tract + interact |  newfactor + postal_code | 0 | postal_code,.)
+    #model2 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip +  proption_BigBrands_naics_postal_open + pct_same_tract + interact |  newfactor + postal_code + countyDate| 0 | postal_code,.)
 
     print(paste("Done 2/4"))
 
     #Model3 IV Continuous * Categorical
-    model3<- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip + Visitors_Mid + Visitors_High|  newfactor + postal_code  | ( Proportion_Mid + Proportion_High +  proption_BigBrands_naics_postal_open  ~  Exposure_Mid + Exposure_High + BrandPostalProp) | postal_code,.)
+    model3<- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip + Visitors_Mid + Visitors_High|  newfactor + postal_code + date | ( Proportion_Mid + Proportion_High +  proption_BigBrands_naics_postal_open  ~  Exposure_Mid + Exposure_High + BrandPostalProp) | countyName,.)
 
     print(paste("Done 3/4"))
 
     #Model4 IV Continuous * Continuous
-    model4<- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip + pct_same_tract |  newfactor + postal_code  | (proption_BigBrands_naics_postal_open + interact  ~   BrandPostalProp + interact_expsoure) | postal_code,.)
+    #model4<- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip + pct_same_tract |  newfactor + postal_code + countyDate | (proption_BigBrands_naics_postal_open + interact  ~   BrandPostalProp + interact_expsoure) | postal_code,.)
     #stargazer(model5, type = "text")
 
-    return(list(model1,model3,model2,model4))
+    return(list(model1,model3))
     
 }
 
@@ -89,10 +89,10 @@ get_loyalty_coeff = function(data_nb){
     print("Created Dummies for Loyal, Running Reg")
 
     ## OLS
-    model1 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip +  proption_BigBrands_naics_postal_open + Loyal + Proportion_Loyal |  newfactor + postal_code | 0 | postal_code,.)
+    model1 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip +  proption_BigBrands_naics_postal_open + Loyal + Proportion_Loyal |  newfactor + postal_code + date| 0 | countyName,.)
 
 
-    model2<- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip + Loyal |  newfactor + postal_code  | ( Proportion_Loyal +  proption_BigBrands_naics_postal_open  ~  Exposure_Loyal + BrandPostalProp) | postal_code,.)
+    model2<- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip + Loyal |  newfactor + postal_code + date  | ( Proportion_Loyal +  proption_BigBrands_naics_postal_open  ~  Exposure_Loyal + BrandPostalProp) | countyName,.)
 
     return(list(model1,model2))
 
@@ -109,9 +109,9 @@ models_local = get_hetro_coeff_3splits(data_nb)
 
 models_loyal = get_loyalty_coeff(data_nb)
 
-screenreg(list(models_local[[1]],models_local[[2]],models_loyal[[1]],models_loyal[[2]]),digits=3, caption = "Regression",caption.above = T, custom.header = list("Model 8"=1:2,"Model 9"=3:4), custom.model.names = c("OLS","IV","OLS","IV"), custom.coef.names = c("Feb_Avg","prop_home_device_zip","Prop. Branch Est. Open","Local Visitors (Med)","Local Visitors (High)","Prop. Branch Est. Open XX Local Visitors (Med)","Prop. Branch Est. Open XX Local Visitors (High)","Prop. Branch Est. Open XX Local Visitors (Med)","Prop. Branch Est. Open XX Local Visitors (High)","Prop. Branch Est. Open","Loyal Customers","Prop. Branch Est. Open XX Loyal Customers","Prop. Branch Est. Open XX Loyal Customers"),reorder.coef=c(3,6,7,9,4,5,8,1,2),custom.gof.rows=list("Fixed Effect Date-NAICS"=c("Yes","Yes","Yes","Yes"),"Fixed Effect PostalCode" = c("Yes","Yes","Yes","Yes")),include.fstatistic = T,table=F)
+screenreg(list(models_local[[1]],models_local[[2]],models_loyal[[1]],models_loyal[[2]]),digits=3, caption = "Regression",caption.above = T, custom.header = list("Model 8"=1:2,"Model 9"=3:4), custom.model.names = c("OLS","IV","OLS","IV"), custom.coef.names = c("Feb_Avg","prop_home_device_zip","Prop. Branch Est. Open","Local Visitors (Med)","Local Visitors (High)","Prop. Branch Est. Open XX Local Visitors (Med)","Prop. Branch Est. Open XX Local Visitors (High)","Prop. Branch Est. Open XX Local Visitors (Med)","Prop. Branch Est. Open XX Local Visitors (High)","Prop. Branch Est. Open","Loyal Customers","Prop. Branch Est. Open XX Loyal Customers","Prop. Branch Est. Open XX Loyal Customers"),reorder.coef=c(3,6,7,9,4,5,8,1,2),custom.gof.rows=list("Fixed Effect Date-NAICS"=c("Yes","Yes","Yes","Yes"),"Fixed Effect PostalCode" = c("Yes","Yes","Yes","Yes")),table=F)
 
-texreg(list(models_local[[1]],models_local[[2]],models_loyal[[1]],models_loyal[[2]]), file = "tables/table3.tex",digits=3, caption = "Regression",caption.above = T, custom.header = list("Model 8"=1:2,"Model 9"=3:4), custom.model.names = c("OLS","IV","OLS","IV"), custom.coef.names = c("Feb_Avg","prop_home_device_zip","Prop. Branch Est. Open","Local Visitors (Med)","Local Visitors (High)","Prop. Branch Est. Open XX Local Visitors (Med)","Prop. Branch Est. Open XX Local Visitors (High)","Prop. Branch Est. Open XX Local Visitors (Med)","Prop. Branch Est. Open XX Local Visitors (High)","Prop. Branch Est. Open","Loyal Customers","Prop. Branch Est. Open XX Loyal Customers","Prop. Branch Est. Open XX Loyal Customers"),reorder.coef=c(3,6,7,9,4,5,8,1,2),custom.gof.rows=list("Fixed Effect Date-NAICS"=c("Yes","Yes","Yes","Yes"),"Fixed Effect PostalCode" = c("Yes","Yes","Yes","Yes")),include.fstatistic = T,table=F,custom.note = paste("\\item %stars. Note"))
+texreg(list(models_local[[1]],models_local[[2]],models_loyal[[1]],models_loyal[[2]]), file = "tables/table3.tex",digits=3, caption = "Regression",caption.above = T, custom.header = list("Model 8"=1:2,"Model 9"=3:4), custom.model.names = c("OLS","IV","OLS","IV"), custom.coef.names = c("Feb_Avg","prop_home_device_zip","Prop. Branch Est. Open","Local Visitors (Med)","Local Visitors (High)","Prop. Branch Est. Open XX Local Visitors (Med)","Prop. Branch Est. Open XX Local Visitors (High)","Prop. Branch Est. Open XX Local Visitors (Med)","Prop. Branch Est. Open XX Local Visitors (High)","Prop. Branch Est. Open","Loyal Customers","Prop. Branch Est. Open XX Loyal Customers","Prop. Branch Est. Open XX Loyal Customers"),reorder.coef=c(3,6,7,9,4,5,8,1,2),custom.gof.rows=list("Fixed Effect Date-NAICS"=c("Yes","Yes","Yes","Yes"),"Fixed Effect PostalCode" = c("Yes","Yes","Yes","Yes"),"Fixed Effect Date" = c("Yes","Yes","Yes","Yes")),table=F,custom.note = paste("\\item %stars. Note"))
 
 
 #3 Splits
