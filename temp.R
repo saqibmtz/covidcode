@@ -1,3 +1,20 @@
+## Sept 17 Adding covidcases binscatter plot
+
+covidcases = fread("filedata/covidcases.csv")
+zip2fips = fread("filedata/ZIP-COUNTY-FIPS_2017-06.csv")
+covidcases$date = ymd(covidcases$date)
+
+data_nb = left_join(data_nb, zip2fips, by = c("postal_code" = "ZIP"))
+data_nb = left_join(data_nb,covidcases, by = c("STCOUNTYFP" = "fips","date" = "date"))
+
+data_nb = data_nb %>% filter(!is.na(prop_home_device_zip))
+
+plot2 = data_nb %>% filter(!is.na(cases)) %>% ggplot() + stat_summary_bin(aes(y = cases, x = BrandPostalProp),fun='mean',bins = 20,geom = "point",color="red")  + xlab("Prop. Brach Est. Open")+ ylab("Number of COVID Cases")  + labs(title ="Covid Cases vs. Prop. Branch Est. Open (fit)") + ylim(0,1200) 
+ggsave("plots/eventstudy/bin_IV_covidCases_fitted.jpg",plot2) 
+
+
+
+
 ## July 28th Adding county*date fixed effects
 pincodes = fread("rawdata/zip_code_database_new.csv") %>% select(zip,county,state)
 data_nb = left_join(data_nb, pincodes, by = c("postal_code" = "zip"))

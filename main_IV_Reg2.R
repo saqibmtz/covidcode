@@ -3,10 +3,17 @@
 data_nb = fread("filedata/data_nb_state.csv")
 data_nb$date = ymd(data_nb$date)
 
+
+cluster_data = fread("filedata/cluster_004.csv")
+data_nb = left_join(data_nb, cluster_data)
+print(c("Percentage outside of Cluster ", sum(!data_nb$inCluster)/dim(data_nb)[1]))
+data_nb = data_nb %>% filter(!inCluster)
+
 data_nb$countyName = as.factor(data_nb$countyName)
 
-data_nb = left_join(data_nb, cluster_date)
-data_nb = data_nb %>% filter(!inCluster)
+
+data_nb = data_nb %>% group_by(safegraph_place_id) %>% mutate(open = lead(open,ordery_by = date))
+data_nb = data_nb %>% drop_na(open)
 
 #########################
 #### 1. OLS MDOELS   ####
@@ -32,6 +39,8 @@ model4 <- data_nb %>% felm(open ~ proption_BigBrands_naics_postal_open + Feb_Avg
 
 ## With Controls + FE Naics*Date + FE Postal
 model5 <- data_nb %>% felm(open ~ proption_BigBrands_naics_postal_open + Feb_Avg + prop_home_device_zip | newfactor + postal_code + date | 0 |countyName,.)
+model5 <- data_nb %>% felm(open ~ proption_BigBrands_naics_postal_open + Feb_Avg + prop_home_device_zip + BrandStores + LocalStores + BrandStores*proption_BigBrands_naics_postal_open + LocalStores * proption_BigBrands_naics_postal_open | newfactor + postal_code + date | 0 |countyName,.)
+stargazer(model5)
 print(paste("Done 5/5"))
 
 #screenreg(list(model1,model2,model3,model4,model5))
