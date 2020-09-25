@@ -39,8 +39,6 @@ model4 <- data_nb %>% felm(open ~ proption_BigBrands_naics_postal_open + Feb_Avg
 
 ## With Controls + FE Naics*Date + FE Postal
 model5 <- data_nb %>% felm(open ~ proption_BigBrands_naics_postal_open + Feb_Avg + prop_home_device_zip | newfactor + postal_code + date | 0 |countyName,.)
-model5 <- data_nb %>% felm(open ~ proption_BigBrands_naics_postal_open + Feb_Avg + prop_home_device_zip + BrandStores + LocalStores + BrandStores*proption_BigBrands_naics_postal_open + LocalStores * proption_BigBrands_naics_postal_open | newfactor + postal_code + date | 0 |countyName,.)
-stargazer(model5)
 print(paste("Done 5/5"))
 
 #screenreg(list(model1,model2,model3,model4,model5))

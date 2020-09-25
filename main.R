@@ -15,6 +15,7 @@ library(broom)
 library(dotwhisker)
 library(texreg)
 library(gridExtra)
+library(tidyr)
 
 ## 1. Defining Global Variables ##
 begin_date = ymd("2020-03-01")
