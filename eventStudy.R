@@ -1,108 +1,5 @@
 ## Event study
 
-data_nb = fread("filedata/data_nb_state.csv")
-data_nb$date = ymd(data_nb$date)
-
-date_naics_counts = data_nb %>% group_by(date,naics_code,postal_code) %>% distinct(proption_BigBrands_naics_postal_open) %>% group_by(date,naics_code) %>% summarise(naics_open = sum(proption_BigBrands_naics_postal_open==1))
-data_naics_prescence = data_nb %>% filter(date == begin_date) %>% group_by(naics_code,postal_code) %>% summarise(totalStores = n()) %>% group_by(naics_code) %>% summarise(totalPrescence = sum(totalStores>0))
-
-date_naics_counts = left_join(date_naics_counts,data_naics_prescence)
-date_naics_counts = date_naics_counts %>% mutate(percent_open = naics_open/totalPrescence)
-
-
-## Exploratory analysis of data
-
-p1 = date_naics_counts %>% ggplot(.) + geom_line(aes(x = date, y = percent_open, color = naics_open, group = naics_code))
-ggsave("plots/eventstudy/naics_plot.jpg",p1)
-
-#### Taking out weekdays
-date_naics_counts = date_naics_counts %>% filter(wday(date)!=1 & wday(date)!=7)
-p1 = date_naics_counts %>% ggplot(.) + geom_line(aes(x = date, y = percent_open, color = naics_open, group = naics_code))
-ggsave("plots/eventstudy/naics_plot_weekday.jpg",p1)
-
-
-#### Making sense of early distributions March 2-5 
-naics_open_begin = date_naics_counts %>% filter(date <= begin_date + days(4)) %>% group_by(naics_code) %>% summarise(open_percent = mean(percent_open))
-naics_open_begin = left_join(naics_open_begin,naics_codes) %>% arrange(open_percent)
-write.csv(naics_open_begin, "plots/eventstudy/naics_early_open.csv")
-
-
-## Absorbing State
-date_naics_counts = data_nb %>% filter(wday(date)!=1 & wday(date)!=7) %>% group_by(date,naics_code,postal_code) %>% summarise(percent_local_open = sum(open)/n(), current_status = sum(proption_BigBrands_naics_postal_open ==1)/n())
-date_naics_counts = date_naics_counts %>% mutate(past_status =NA)
-date_naics_counts$past_status = ifelse(date_naics_counts$current_status==0,T,NA)
-
-date_naics_counts = date_naics_counts %>% group_by(naics_code,postal_code) %>% arrange(date) %>% fill(past_status)
-
-##### /Diagnostics
-date_naics_counts %>% filter(current_status ==1) %>% arrange(desc(naics_code)) %>% head(10)
-date_naics_counts %>% filter(naics_code == 813) %>% filter(postal_code == 13204) %>% as.data.frame() %>% select(current_status,past_status,date)
-##### /End Diagnostics
-
-
-date_naics_counts = date_naics_counts %>% mutate(past_status = replace_na(past_status,F))
-temp = cbind(lapply(date_naics_counts, function(x) {length(unique(x))})) %>% as.data.frame()
-#### Display the data
-stargazer(distinct(as.data.frame(date_naics_counts)), type = "text")
-p1 <- date_naics_counts %>% ggplot(.) + geom_smooth(aes(x = date, y = as.integer(past_status)),se=T) + ylab("Percent Unit in Treatment") +xlab("Date")
-ggsave("plots/eventstudy/treatmentStatus.jpg",p1)
-
-
-date_naics_counts %>% arrange(naics_code,date)
-date_naics_counts = date_naics_counts %>% mutate(percent_local_closed = 1 - percent_local_open)
-date_naics_counts = date_naics_counts %>% mutate(ZipDate = paste(postal_code,date), NaicsDate = paste(naics_code,date))
-
-data_day = data_nb %>% filter(date == begin_date)
-data_day = data_day %>% select(naics_code,postal_code,big_brands,LocalStores, BrandStores)
-
-date_naics_counts = left_join(date_naics_counts,data_day)
-
-fwrite(date_naics_counts, "filedata/EventStudyData.csv")
-#date_naics_counts = fread("filedata/EventStudyData.csv")
-
-
-
-
-
-days = -14:14
-
-get_delayed_estimates = function(data_in, days_lagged){
-    if(days_lagged<0){
-        data_in = data_in %>% group_by(postal_code,naics_code) %>% mutate(past_status_lagged = lag(past_status,-1*days_lagged,ordery_by = date))
-    }
-    else{
-        data_in = data_in %>% group_by(postal_code,naics_code) %>% mutate(past_status_lagged = lead(past_status,1*days_lagged,ordery_by = date))
-    }
-    totalObs = sum(!is.na(data_in$past_status_lagged))
-    model5 = tidy(data_in %>% felm(percent_local_closed ~ past_status_lagged | ZipDate + NaicsDate,.)) %>% mutate(lag = days_lagged, Obs = totalObs)
-
-    return(model5)
-}
-
-out = lapply(days, function(x) get_delayed_estimates(date_naics_counts,x))
-
-out2 = out %>% do.call(rbind, .)
-
-out2['model'] = out2$lag
-out2$term[out2$term == "past_status_laggedTRUE"] = "LaggedTreatment"
-
-p2 = small_multiple(out2) + theme_bw() + ylab("Coefficient Estimate") + xlab("Days Lagged Treatment") + ggtitle("Effect of Treatment (atleast one brand store closing in NAICS-ZIP) on Prop. Of Local Store Closing")
-ggsave("plots/eventstudy/laggedPlot_ZipDate_NaicsDate.jpg",p2)
-
-
-## Restricting to March where we see most change
-date_naics_counts_march = date_naics_counts %>% filter(date<=ymd("2020-03-30"))
-
-out = lapply(days, function(x) get_delayed_estimates(date_naics_counts_march,x))
-out2 = out %>% do.call(rbind, .)
-out2['model'] = out2$lag
-out2$term[out2$term == "past_status_laggedTRUE"] = "LaggedTreatment"
-p2 = small_multiple(out2) + theme_bw() + ylab("Coefficient Estimate") + xlab("Days Lagged Treatment") + ggtitle("Effect of Treatment (atleast one brand store closing in NAICS-ZIP) on Prop. Of Local Store Closing")
-ggsave("plots/eventstudy/laggedPlot_march.jpg",p2)
-
-
-
-
 #### Using alternate definition of closing. A brand establishment in NAICS-Zip closed for three days or more
 
 data = fread("filedata/preRegData_state.csv")
@@ -111,16 +8,18 @@ data_bb$date = ymd(data_bb$date)
 rm(data)
 
 data_bb = data_bb %>% filter(wday(date)!=1 & wday(date)!=7)
-data_bb = data_bb %>% group_by(safegraph_place_id) %>% mutate(closingStatus = ifelse(!open & !lead(open,1,ordery_by = date) & !lead(open,2,ordery_by = date), T, NA))
+data_bb = data_bb %>% group_by(safegraph_place_id) %>% mutate(closingStatus = ifelse(!open & !lead(open,1,ordery_by = date) & !lead(open,2,ordery_by = date), T, NA), closingStatus_1day = ifelse(!open,T,NA))
 #Display Data
 data_bb %>% filter(safegraph_place_id == "sg:03bc8f3dfdf64cffa956303dd1ab923a") %>% select(date, open, closingStatus) %>% as.data.frame() 
 
 data_bb = data_bb %>% group_by(safegraph_place_id) %>% arrange(date) %>% fill(closingStatus)
+data_bb = data_bb %>% group_by(safegraph_place_id) %>% arrange(date) %>% fill(closingStatus_1day)
 
 data_bb$closingStatus[is.na(data_bb$closingStatus)] = F
+data_bb$closingStatus_1day[is.na(data_bb$closingStatus_1day)] = F
 
 ### Aggregating at zip-naics-date level
-data_bb_agg = data_bb %>% group_by(postal_code,naics_code,date) %>% summarise(closedStatusBrand = ifelse(sum(closingStatus)>0,T,F))
+data_bb_agg = data_bb %>% group_by(postal_code,naics_code,date) %>% summarise(closedStatusBrand = ifelse(sum(closingStatus)>0,T,F),closedStatusBrand_1day = ifelse(sum(closingStatus_1day)>0,T,F))
 
 ##Displaying the data
 data_bb_agg %>% arrange(postal_code,naics_code,date) %>% select(naics_code,closedStatusBrand) %>% head(.,40) %>% as.data.frame()
@@ -140,26 +39,69 @@ data_nb = fread("filedata/data_nb_state.csv")
 data_nb$date = ymd(data_nb$date)
 
 data_nb = data_nb %>% filter(wday(date)!=1 & wday(date)!=7)
+data_nb = data_nb %>% group_by(safegraph_place_id) %>% mutate(closingStatusCommunity = ifelse(!open & !lead(open,1,ordery_by = date) & !lead(open,2,ordery_by = date), T, NA), closingStatusCommunity_1day = ifelse(!open,T,NA))
+data_nb = data_nb %>% group_by(safegraph_place_id) %>% arrange(date) %>% fill(closingStatusCommunity)
+data_nb = data_nb %>% group_by(safegraph_place_id) %>% arrange(date) %>% fill(closingStatusCommunity_1day)
 
-data_nb_agg = data_nb %>% group_by(naics_code,postal_code,date) %>% summarise(percent_closed_community = sum(!open)/n())
+data_nb$closingStatusCommunity[is.na(data_nb$closingStatusCommunity)] = F
+data_nb$closingStatusCommunity_1day[is.na(data_nb$closingStatusCommunity_1day)] = F
+
+data_nb_agg = data_nb %>% group_by(naics_code,postal_code,date,countyName) %>% summarise(percent_closed_community = sum(closingStatusCommunity)/n(),percent_closed_community_1day = sum(closingStatusCommunity_1day)/n())
+
 
 data_nb_agg = left_join(data_nb_agg,data_bb_agg)
 
 fwrite(data_nb_agg, "filedata/EventStudyData_3days.csv")
 
+data_nb_agg = fread("filedata/EventStudyData_3days.csv")
+data_nb_agg$date = ymd(data_nb_agg$date)
+
 ## Running Regression
+data_nb_agg$post = (data_nb_agg$closedStatusBrand_ ==T)
+data_nb_agg = data_nb_agg %>% group_by(naics_code,postal_code) %>% mutate(change_date = ifelse(closedStatusBrand & !lag(closedStatusBrand,1,order_by = date),T,F))
+temp = data_nb_agg %>% group_by(naics_code,postal_code) %>% filter(change_date) %>% summarise(treated_date = min(date))
 
-data_nb_agg = data_nb_agg %>% mutate(DateNaics = paste(date, naics_code),DateZip = paste(date, postal_code))
+data_nb_agg = left_join(data_nb_agg,temp)
+#data_nb_agg$treated_date[is.na(data_nb_agg$treated_date)] = ymd(end_date + years(1))
 
-model1 = data_nb_agg %>% felm(percent_closed_community ~ closedStatusBrand,.)
-model2 = data_nb_agg %>% felm(percent_closed_community ~ closedStatusBrand | date + postal_code + naics_code,.)
-model3 = data_nb_agg %>% felm(percent_closed_community ~ closedStatusBrand | date + postal_code + DateNaics,.)
-model4 = data_nb_agg %>% felm(percent_closed_community ~ closedStatusBrand | DateNaics + DateZip,.)
+data_nb_agg = data_nb_agg %>% mutate(lag = date - treated_date)
+data_nb_agg$lag[is.na(data_nb_agg$lag)] = 0
+data_nb_agg$lag[data_nb_agg$lag > 14] = 14
+data_nb_agg$lag[data_nb_agg$lag < -14] = -14
+
+data_nb_agg = data_nb_agg %>% mutate(DateNaics = paste(date,naics_code), DateZip = paste(date,postal_code), DateCounty = paste(date,countyName))
+data_nb_agg$lag = relevel(factor(data_nb_agg$lag),ref = "0")
+
+#data_nb_agg = data_nb_agg %>% mutate(DateNaics = paste(date, naics_code),DateZip = paste(date, postal_code))
+
+model1 = data_nb_agg %>% felm(percent_closed_community ~ factor(lag),.)
+model2 = data_nb_agg %>% felm(percent_closed_community ~ factor(lag) | date + postal_code + naics_code,.)
+model3 = data_nb_agg %>% felm(percent_closed_community ~ factor(lag)| date + postal_code + DateNaics,.)
+model4 = data_nb_agg %>% felm(percent_closed_community ~ factor(lag) | DateNaics + DateZip,.)
+model5 = data_nb_agg %>% felm(percent_closed_community ~ lag | DateNaics + DateCounty,.)
 
 
-stargazer(model1, model2, model3, model4, type = "text",covariate.labels = c("Treatment (BrandClosedStatus) "))
+#stargazer(model1, model2, model3, model4, type = "text",covariate.labels = c("Treatment (BrandClosedStatus) "))
+
+plot_results = function(model, outputLocation){
+    coef <- tidy(model5, conf.int = TRUE) %>% mutate(term = extract_numeric(term))
+    coef = coef %>% mutate(grp = ifelse(as.integer(coef$term) <0,T,F))
+    p1 = ggplot(coef,aes(term,estimate,group = grp)) + geom_point() + geom_line(color = "darkblue") + geom_line(aes(term,conf.low),linetype = "dashed",color = "blue") + geom_line(aes(term,conf.high),linetype = "dashed",color = "blue") + theme_bw() + xlab("Lag") + ylab("Coefficient")
+    ggsave(outputLocation,p1)
+}
+
+plot_results(model2,"plots/eventstudynew/laggedPlot2.jpg")
+plot_results(model3,"plots/eventstudynew/laggedPlot3.jpg")
+plot_results(model4,"plots/eventstudynew/laggedPlot4.jpg")
+plot_results(model5,"plots/eventstudynew/laggedPlot5_relevel.jpg")
 
 
+p3 = tidy(model5,conf.int=T) %>% mutate(term = extract_numeric(term)) %>% ggplot(.,aes(x=term,y=estimate, ymin = conf.low, ymax = conf.high)) + geom_crossbar(fill = "#D55E00", color = "#D55E00", alpha = 1,width=.3) + geom_point(size = 1) + xlab("Lag") + ylab("Coefficient") + ylim(-.05,.05) + geom_vline(xintercept = 0,linetype = "dashed",size = 0.3) + geom_hline(yintercept = 0,size = 0.5)  + theme_bw() + geom_point(aes(x=0,y=0), size = 1)
+ggsave("plots/eventstudynew/temp.jpg",p3,width  = 7, height = 5)
+ggsave("plots/eventstudynew/temp2.jpg",p1,width  = 8, height = 5)
+
+p2 = dwplot(tidy(model2)) + theme_bw() + ylab("Coefficient Estimate") + xlab("Days Lead Treatment") + ggtitle("Effect of Treatment (3 days) on Prop. Of Local Store Closing") 
+ggsave("plots/eventstudynew/laggedPlot_3days_Zip_DateNaics.jpg",p2)
 
 ### Generating Event study figure
 
@@ -167,14 +109,14 @@ stargazer(model1, model2, model3, model4, type = "text",covariate.labels = c("Tr
 days = -14:14
 
 get_delayed_estimates = function(data_in, days_lagged){
-    if(days_lagged<0){
-        data_in = data_in %>% group_by(postal_code,naics_code) %>% mutate(closedStatusBrand_lagged = lag(closedStatusBrand,-1*days_lagged, ordery_by = date))
+    if(days_lagged>0){
+        data_in = data_in %>% group_by(postal_code,naics_code) %>% mutate(percent_closed_community_lagged = lag(percent_closed_community,1*days_lagged, ordery_by = date))
     }
     else{
-        data_in = data_in %>% group_by(postal_code,naics_code) %>% mutate(closedStatusBrand_lagged = lead(closedStatusBrand,1*days_lagged,ordery_by = date))
+        data_in = data_in %>% group_by(postal_code,naics_code) %>% mutate(percent_closed_community_lagged = lead(percent_closed_community,-1*days_lagged,ordery_by = date))
     }
     totalObs = sum(!is.na(data_in$closedStatusBrand_lagged))
-    model5 = tidy(data_in %>% felm(percent_closed_community ~ closedStatusBrand_lagged | date + postal_code + DateNaics,.)) %>% mutate(lag = days_lagged, Obs = totalObs)
+    model5 = tidy(data_in %>% felm(percent_closed_community_lagged ~ closedStatusBrand | date + postal_code + DateNaics,.)) %>% mutate(lag = days_lagged, Obs = totalObs)
 
     return(model5)
 }
@@ -186,4 +128,5 @@ out2['model'] = out2$lag
 out2$term[out2$term == "closedStatusBrand_laggedTRUE"] = "LaggedTreatment"
 p2 = small_multiple(out2) + theme_bw() + ylab("Coefficient Estimate") + xlab("Days Lead Treatment") + ggtitle("Effect of Treatment (3 days) on Prop. Of Local Store Closing")
 ggsave("plots/eventstudy/laggedPlot_3days_Zip_DateNaics.jpg",p2)
+
 

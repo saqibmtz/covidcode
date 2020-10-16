@@ -29,7 +29,7 @@ naics_essentail_cutoff = .30   #Percent closed threshold to identify essential s
 #######################################
 
     ### 2.1 Reading Raw Data ################
-    pincodes = read.csv("rawdata/uszips.csv") %>% select(zip,state_name,state_id) 
+    pincodes = read.csv("rawdata/uszips.csv") %>% select(zip,state_name,state_id,county_name) 
     naics_codes = fread("rawdata/Naics_2017.csv") %>% select(Seq,naics_code,naics_name) 
     naics_codes$naics_code = as.integer(naics_codes$naics_code)
 
@@ -62,7 +62,7 @@ naics_essentail_cutoff = .30   #Percent closed threshold to identify essential s
     data = list_returned[[1]]
     big_brands = list_returned[[2]]
     rm(list_returned)
-    #fwrite(data,"temp/postcovr.csv")
+    fwrite(data,"temp/postcovr.csv")
     
 
     ### 2.5 Creating Dictionary for Brand-Date-Postal Openings #####

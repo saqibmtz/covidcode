@@ -1,3 +1,8 @@
+## October 5 Brand within NAICS avg. foot-traffic 
+
+temp2 =  data %>% filter((BigBrandStores>0) & (LocalStores>0) & (BrandLocal == 0))
+length(unique(temp2$naics_code))
+length(unique(temp2$naics_code_6digit))
 ## Sept 17 Adding covidcases binscatter plot
 
 covidcases = fread("filedata/covidcases.csv")
@@ -7,11 +12,34 @@ covidcases$date = ymd(covidcases$date)
 data_nb = left_join(data_nb, zip2fips, by = c("postal_code" = "ZIP"))
 data_nb = left_join(data_nb,covidcases, by = c("STCOUNTYFP" = "fips","date" = "date"))
 
-data_nb = data_nb %>% filter(!is.na(prop_home_device_zip))
+missing = sum(is.na(data_nb$cases))/nrow(data_nb)
+print(paste("Missing: ",missing))
+
+data_nb = data_nb %>% filter(!is.na(prop_home_device_zip))  %>% filter(!is.na(deaths)) %>% as.data.frame()
 
 plot2 = data_nb %>% filter(!is.na(cases)) %>% ggplot() + stat_summary_bin(aes(y = cases, x = BrandPostalProp),fun='mean',bins = 20,geom = "point",color="red")  + xlab("Prop. Brach Est. Open")+ ylab("Number of COVID Cases")  + labs(title ="Covid Cases vs. Prop. Branch Est. Open (fit)") + ylim(0,1200) 
 ggsave("plots/eventstudy/bin_IV_covidCases_fitted.jpg",plot2) 
 
+
+plot3 = data_nb %>% filter(!is.na(cases)) %>% ggplot() + geom_smooth(aes(y = cases, x = BrandPostalProp, group = naics_code, color = naics_code),se = F)  + xlab("Prop. Brach Est. Open")+ ylab("Number of COVID Cases")  + labs(title ="Covid Cases vs. Prop. Branch Est. Open (fit)") + ylim(0,1200) 
+ggsave("plots/eventstudy/bin_IV_covidCases_fitted.jpg",plot3) 
+
+
+date_naics_counts = data_nb %>% group_by(date,naics_code,postal_code) %>% distinct(BrandPostalProp,cases) 
+plot3 = date_naics_counts %>% filter(!is.na(cases)) %>% ggplot() + geom_smooth(aes(y = cases, x = BrandPostalProp, group = naics_code, color = naics_code),se = F)  + xlab("Prop. Brach Est. Open")+ ylab("Number of COVID Cases")  + labs(title ="Covid Cases vs. Prop. Branch Est. Open (fit)") + ylim(0,1200) 
+ggsave("plots/eventstudy/bin_IV_covidCases_fitted.jpg",plot3) 
+
+### Plotting cases,Ind Var, Inst. Var vs. date
+
+p1 = data_nb %>% ggplot(.) + geom_smooth(aes(x = date, y = cases/max(cases)*10,color="red")) 
+p1 = p1 + geom_smooth(aes(x = date, y = BrandPostalProp, color = "green")) + geom_smooth(aes(x = date, y = proption_BigBrands_naics_postal_open, color = "blue"),se=F) + xlab("Outcome") + ylab("Date")
+
+ggsave("plots/eventstudy/IV_date_plot.jpg",p1)
+
+data_nb_zip = data_nb %>% group_by(naics_code,date,postal_code) %>% summarise(BrandPostalProp = mean(BrandPostalProp), proption_BigBrands_naics_postal_open = mean(proption_BigBrands_naics_postal_open),cases = mean(cases))
+p2 = data_nb_zip %>% ggplot(.) + geom_smooth(aes(x = date, y = cases/max(cases)*10, color = "red"))
+p2 = p2 + geom_smooth(aes(x = date, y = BrandPostalProp, color = "green")) + geom_smooth(aes(x = date, y = proption_BigBrands_naics_postal_open, color = "blue"),se=F) + xlab("Date") + ylab("Outcome")
+ggsave("plots/eventstudy/IV_date_plot_zipLevel.jpg",p2)
 
 
 
