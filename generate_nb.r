@@ -24,6 +24,12 @@ generate_nb = function(filein = "filedata/preRegData_state.csv"){
 
     data_nb['countyDate'] = paste(data_nb$countyName,data_nb$date)
 
+    data_nb['zipDate'] = paste(data_nb$postal_code,data_nb$date)
+    
+    ## Lagging the independent variable and instrument variable
+    data_nb = data_nb %>% group_by(safegraph_place_id) %>% mutate(proption_BigBrands_naics_postal_open  = lag(proption_BigBrands_naics_postal_open, ordery_by = date),
+                                                                  BrandPostalProp = lag(BrandPostalProp, ordery_by = date))
+    data_nb = data_nb %>% drop_na(BrandPostalProp)
     fwrite(data_nb,"filedata/data_nb_state.csv")
 
 }

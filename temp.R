@@ -1,3 +1,49 @@
+## Oct 23
+## For each chain establishment, find the median income and age in the census block or tract. Then for each chain, compute the variance in both of these variables. Exclude those with the lowest amount of variance from the IV and reestimate the treatment effect
+
+
+data = fread("filedata/preRegData_state.csv")
+data_bb = data %>% filter(big_brands)
+
+### Follow census.R code
+
+
+data_bb$date = ymd(data_bb$date)
+data_bb_day = data_bb %>% filter(date == begin_date)
+
+brand_var = data_bb %>% group_by(brands) %>% summarise(varIncome = sd(meanI,na.rm=T))
+brands_included = brand_var %>% filter(varIncome>=median(varIncome))
+
+BrandNaicsPostal_prop = fread("filedata/PostalBrandDictState.csv")
+BrandNaicsPostal_prop = BrandNaicsPostal_prop %>% filter(brands %in% brands_included$brands)
+
+rm(data,data_nb)
+data = fread("temp/postcovr.csv")
+
+BrandNaicsPostal_prop = BrandNaicsPostal_prop %>% 
+                                group_by(naics_code,postal_code,date) %>%   
+                                    summarise(BrandPostalProp = mean(proption_naics_national))
+                                    ## ^^Weighted mean at postal-day-naics level 
+data = left_join(data,BrandNaicsPostal_prop,by = c("naics_code" = "naics_code" , "postal_code" = "postal_code", "date" = "date"))
+
+naics_postal= data %>% filter(big_brands) %>% 
+                        group_by(naics_code,date,postal_code) %>% 
+                            summarise(proption_BigBrands_naics_postal_open = sum(open)/n())
+
+data = left_join(data,naics_postal)
+
+    data_nb = data %>% filter(BrandNational==0)
+    data_nb = data_nb %>% filter(!is.na(BrandPostalProp))
+
+    data_nb['newfactor'] = paste(data_nb$date,data_nb$naics_code)
+    data_nb$newfactor = ifelse(is.na(data_nb$naics_code),NA,data_nb$newfactor)
+
+    data_nb['countyDate'] = paste(data_nb$countyName,data_nb$date)
+
+rm(naics_postal)
+
+
+
 ## October 5 Brand within NAICS avg. foot-traffic 
 
 temp2 =  data %>% filter((BigBrandStores>0) & (LocalStores>0) & (BrandLocal == 0))

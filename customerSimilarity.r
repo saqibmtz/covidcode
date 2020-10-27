@@ -1,3 +1,11 @@
+## Defining Cosine similarity for arrays
+cosine = function(x,y){
+    return(sum(x*y)/(sum(x^2)^0.5 *sum(y^2)^0.5) )
+}
+
+
+#### #### 
+
 customerCBGs = fread("filedata/febpatternscbg.csv")
 customerCBGs = customerCBGs %>% filter(visitor_types == "H") %>% select(-visitor_types)
 data = fread("filedata/preRegData_state.csv") 
@@ -29,7 +37,7 @@ customerCBGs_bigbrands = inner_join(customerCBGs_bigbrands,both_zip_naics)
 customerCBGs_nonbrands = inner_join(customerCBGs_nonbrands,both_zip_naics)
 
 
-## Group_by left_join is not an easy option in R
+## Group_by left_join is not an easy option in R. Merging is slow. Instead using a global merge and fixing for missing data.
 ## Creating a list of all possible NAICS x Zip X CBG combinations observed in the data and populating that 
 
 
@@ -50,12 +58,6 @@ community_data = community_data %>% mutate(visitor_counts = replace_na(visitor_c
 community_data = community_data %>% group_by(safegraph_place_id) %>% mutate(zero_community = ifelse(sum(visitor_counts)==0,T,F), zero_brand = ifelse(sum(MeanVisitors_brand)==0,T,F))
 
 community_data = community_data %>% filter(!zero_community & !zero_brand)
-
-temp = community_data %>% filter(zero_brand)
-dim(temp)
-cosine = function(x,y){
-    return(sum(x*y)/(sum(x^2)^0.5 *sum(y^2)^0.5) )
-}
 
 
 ## Computing Cosine similarity

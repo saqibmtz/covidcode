@@ -44,7 +44,7 @@ get_hetro_coeff_3splits <- function(data_in, percentile_based = F){
 
 
     #Model1 OLS Continuous * Categorical
-    model1 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip +  proption_BigBrands_naics_postal_open + Visitors_Mid + Visitors_High  + Proportion_Mid + Proportion_High|  newfactor + postal_code + date | 0 | countyName,.)
+    model1 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip +  proption_BigBrands_naics_postal_open + Visitors_Mid + Visitors_High  + Proportion_Mid + Proportion_High|  newfactor + countyDate | 0 | countyName,.)
 
     print(paste("Done 1/4"))
 
@@ -54,7 +54,7 @@ get_hetro_coeff_3splits <- function(data_in, percentile_based = F){
     print(paste("Done 2/4"))
 
     #Model3 IV Continuous * Categorical
-    model3<- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip + Visitors_Mid + Visitors_High|  newfactor + postal_code + date | ( Proportion_Mid + Proportion_High +  proption_BigBrands_naics_postal_open  ~  Exposure_Mid + Exposure_High + BrandPostalProp) | countyName,.)
+    model3<- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip + Visitors_Mid + Visitors_High|  newfactor + countyDate | ( Proportion_Mid + Proportion_High +  proption_BigBrands_naics_postal_open  ~  Exposure_Mid + Exposure_High + BrandPostalProp) | countyName,.)
 
     print(paste("Done 3/4"))
 
@@ -89,10 +89,10 @@ get_loyalty_coeff = function(data_nb){
     print("Created Dummies for Loyal, Running Reg")
 
     ## OLS
-    model1 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip +  proption_BigBrands_naics_postal_open + Loyal + Proportion_Loyal |  newfactor + postal_code + date| 0 | countyName,.)
+    model1 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip +  proption_BigBrands_naics_postal_open + Loyal + Proportion_Loyal |  newfactor + countyDate | 0 | countyName,.)
 
 
-    model2<- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip + Loyal |  newfactor + postal_code + date  | ( Proportion_Loyal +  proption_BigBrands_naics_postal_open  ~  Exposure_Loyal + BrandPostalProp) | countyName,.)
+    model2<- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip + Loyal |  newfactor + countyDate  | ( Proportion_Loyal +  proption_BigBrands_naics_postal_open  ~  Exposure_Loyal + BrandPostalProp) | countyName,.)
 
     return(list(model1,model2))
 
@@ -109,9 +109,9 @@ models_local = get_hetro_coeff_3splits(data_nb)
 
 models_loyal = get_loyalty_coeff(data_nb)
 
-screenreg(list(models_local[[1]],models_local[[2]],models_loyal[[1]],models_loyal[[2]]),digits=3, caption = "Regression",caption.above = T, custom.header = list("Model 8"=1:2,"Model 9"=3:4), custom.model.names = c("OLS","IV","OLS","IV"), custom.coef.names = c("Feb_Avg","prop_home_device_zip","Prop. Branch Est. Open","Local Visitors (Med)","Local Visitors (High)","Prop. Branch Est. Open XX Local Visitors (Med)","Prop. Branch Est. Open XX Local Visitors (High)","Prop. Branch Est. Open XX Local Visitors (Med)","Prop. Branch Est. Open XX Local Visitors (High)","Prop. Branch Est. Open","Loyal Customers","Prop. Branch Est. Open XX Loyal Customers","Prop. Branch Est. Open XX Loyal Customers"),reorder.coef=c(3,6,7,9,4,5,8,1,2),custom.gof.rows=list("Fixed Effect Date-NAICS"=c("Yes","Yes","Yes","Yes"),"Fixed Effect PostalCode" = c("Yes","Yes","Yes","Yes")),table=F)
+screenreg(list(models_local[[1]],models_local[[2]],models_loyal[[1]],models_loyal[[2]]),digits=3, caption = "Regression",caption.above = T, custom.header = list("Model 8"=1:2,"Model 9"=3:4), custom.model.names = c("OLS","IV","OLS","IV"), custom.coef.names = c("Feb_Avg","prop_home_device_zip","Prop. Branch Est. Open","Local Visitors (Med)","Local Visitors (High)","Prop. Branch Est. Open XX Local Visitors (Med)","Prop. Branch Est. Open XX Local Visitors (High)","Prop. Branch Est. Open XX Local Visitors (Med)","Prop. Branch Est. Open XX Local Visitors (High)","Prop. Branch Est. Open","Loyal Customers","Prop. Branch Est. Open XX Loyal Customers","Prop. Branch Est. Open XX Loyal Customers"),reorder.coef=c(3,6,7,9,4,5,8,1,2),custom.gof.rows=list("Fixed Effect NAICS XX Date"=c("Yes","Yes","Yes","Yes"),"Fixed Effect County XX Date" = c("Yes","Yes","Yes","Yes")),table=F)
 
-texreg(list(models_local[[1]],models_local[[2]],models_loyal[[1]],models_loyal[[2]]), file = "tables/table3.tex",digits=3, caption = "Regression",caption.above = T, custom.header = list("Model 8"=1:2,"Model 9"=3:4), custom.model.names = c("OLS","IV","OLS","IV"), custom.coef.names = c("Feb_Avg","prop_home_device_zip","Prop. Branch Est. Open","Local Visitors (Med)","Local Visitors (High)","Prop. Branch Est. Open XX Local Visitors (Med)","Prop. Branch Est. Open XX Local Visitors (High)","Prop. Branch Est. Open XX Local Visitors (Med)","Prop. Branch Est. Open XX Local Visitors (High)","Prop. Branch Est. Open","Loyal Customers","Prop. Branch Est. Open XX Loyal Customers","Prop. Branch Est. Open XX Loyal Customers"),reorder.coef=c(3,6,7,9,4,5,8,1,2),custom.gof.rows=list("Fixed Effect Date-NAICS"=c("Yes","Yes","Yes","Yes"),"Fixed Effect PostalCode" = c("Yes","Yes","Yes","Yes"),"Fixed Effect Date" = c("Yes","Yes","Yes","Yes")),table=F,custom.note = paste("\\item %stars. Note"))
+texreg(list(models_local[[1]],models_local[[2]],models_loyal[[1]],models_loyal[[2]]), file = "tables/table3.tex",digits=3, caption = "Regression",caption.above = T, custom.header = list("Model 8"=1:2,"Model 9"=3:4), custom.model.names = c("OLS","IV","OLS","IV"), custom.coef.names = c("Feb_Avg","prop_home_device_zip","Prop. Branch Est. Open","Local Visitors (Med)","Local Visitors (High)","Prop. Branch Est. Open XX Local Visitors (Med)","Prop. Branch Est. Open XX Local Visitors (High)","Prop. Branch Est. Open XX Local Visitors (Med)","Prop. Branch Est. Open XX Local Visitors (High)","Prop. Branch Est. Open","Loyal Customers","Prop. Branch Est. Open XX Loyal Customers","Prop. Branch Est. Open XX Loyal Customers"),reorder.coef=c(3,6,7,9,4,5,8,1,2),ccustom.gof.rows=list("Fixed Effect NAICS XX Date"=c("Yes","Yes","Yes","Yes"),"Fixed Effect County XX Date" = c("Yes","Yes","Yes","Yes")),table=F,custom.note = paste("\\item %stars. Note"))
 
 
 #3 Splits

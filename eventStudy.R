@@ -70,14 +70,14 @@ data_nb_agg$lag[data_nb_agg$lag > 14] = 14
 data_nb_agg$lag[data_nb_agg$lag < -14] = -14
 
 data_nb_agg = data_nb_agg %>% mutate(DateNaics = paste(date,naics_code), DateZip = paste(date,postal_code), DateCounty = paste(date,countyName))
-data_nb_agg$lag = relevel(factor(data_nb_agg$lag),ref = "0")
+data_nb_agg$lag = relevel(factor(data_nb_agg$lag),ref = "-1")
 
 #data_nb_agg = data_nb_agg %>% mutate(DateNaics = paste(date, naics_code),DateZip = paste(date, postal_code))
 
-model1 = data_nb_agg %>% felm(percent_closed_community ~ factor(lag),.)
-model2 = data_nb_agg %>% felm(percent_closed_community ~ factor(lag) | date + postal_code + naics_code,.)
-model3 = data_nb_agg %>% felm(percent_closed_community ~ factor(lag)| date + postal_code + DateNaics,.)
-model4 = data_nb_agg %>% felm(percent_closed_community ~ factor(lag) | DateNaics + DateZip,.)
+#model1 = data_nb_agg %>% felm(percent_closed_community ~ factor(lag),.)
+#model2 = data_nb_agg %>% felm(percent_closed_community ~ factor(lag) | date + postal_code + naics_code,.)
+#model3 = data_nb_agg %>% felm(percent_closed_community ~ factor(lag)| date + postal_code + DateNaics,.)
+#model4 = data_nb_agg %>% felm(percent_closed_community ~ factor(lag) | DateNaics + DateZip,.)
 model5 = data_nb_agg %>% felm(percent_closed_community ~ lag | DateNaics + DateCounty,.)
 
 
@@ -93,10 +93,10 @@ plot_results = function(model, outputLocation){
 plot_results(model2,"plots/eventstudynew/laggedPlot2.jpg")
 plot_results(model3,"plots/eventstudynew/laggedPlot3.jpg")
 plot_results(model4,"plots/eventstudynew/laggedPlot4.jpg")
-plot_results(model5,"plots/eventstudynew/laggedPlot5_relevel.jpg")
+plot_results(model5,"plots/eventstudynew/laggedPlot5_relevel_1.jpg")
 
 
-p3 = tidy(model5,conf.int=T) %>% mutate(term = extract_numeric(term)) %>% ggplot(.,aes(x=term,y=estimate, ymin = conf.low, ymax = conf.high)) + geom_crossbar(fill = "#D55E00", color = "#D55E00", alpha = 1,width=.3) + geom_point(size = 1) + xlab("Lag") + ylab("Coefficient") + ylim(-.05,.05) + geom_vline(xintercept = 0,linetype = "dashed",size = 0.3) + geom_hline(yintercept = 0,size = 0.5)  + theme_bw() + geom_point(aes(x=0,y=0), size = 1)
+p3 = tidy(model5,conf.int=T) %>% mutate(term = extract_numeric(term)) %>% ggplot(.,aes(x=term,y=estimate, ymin = conf.low, ymax = conf.high)) + geom_crossbar(fill = "#D55E00", color = "#D55E00", alpha = 1,width=.3) + geom_point(size = 1) + xlab("Lag") + ylab("Coefficient") + ylim(-.05,.05) + geom_vline(xintercept = -1,linetype = "dashed",size = 0.3) + geom_hline(yintercept = 0,size = 0.5)  + theme_bw() + geom_point(aes(x=-1,y=0), size = 1)
 ggsave("plots/eventstudynew/temp.jpg",p3,width  = 7, height = 5)
 ggsave("plots/eventstudynew/temp2.jpg",p1,width  = 8, height = 5)
 
