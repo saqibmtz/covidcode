@@ -19,14 +19,15 @@ fix_names = function(filein){
     textin = gsub("visits\\\\_by\\\\_date","Daily\\ Visits" ,textin)
     textin = gsub("Num. obs.","Observations" ,textin)
     textin = gsub("Num. groups\\:" ,"Number of Groups\\:",textin)
-    textin = gsub("newfactor " ,"NAICS-Date",textin)
-    textin = gsub("postal\\\\_code" ,"PostalCode",textin)
+    textin = gsub("newfactor " ,"NAICS XX Date",textin)
+    textin = gsub("countyDate","County XX Date",textin) 
+    textin = gsub("postal\\\\_code" ,"Zip",textin)
     textin = gsub("naics\\\\_code" ,"NAICS",textin)
     textin = gsub("R\\$\\^2\\$" ,"R2",textin)
     textin = gsub("\\(full model\\)" ,"",textin)
     textin = gsub("XX" ,"\\$\\\\times\\$",textin)
     textin = gsub("pct\\\\_same\\\\_tract","Prop. Local Customers",textin)  
-    textin = gsub("countyDate","County-Date",textin)   
+  
 
     textin = textin[-grep(pattern = "proj", x = textin)]
 

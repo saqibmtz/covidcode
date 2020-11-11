@@ -29,22 +29,22 @@ model2 <- data_nb %>% felm(open ~ proption_BigBrands_naics_postal_open + Feb_Avg
 print(paste("Done 2/5"))
 
 ## With Controls + FE Naics + FE County
-model3 <- data_nb %>% felm(open ~ proption_BigBrands_naics_postal_open + Feb_Avg + prop_home_device_zip  + postshelter | naics_code + countyName | 0 |countyName,.)
+model3 <- data_nb %>% felm(open ~ proption_BigBrands_naics_postal_open + Feb_Avg + prop_home_device_zip  + postshelter | naics_code + postal_code | 0 |countyName,.)
 print(paste("Done 3/5"))
 
 ## With Controls + FE Naics + FE County + FE Date
-model4 <- data_nb %>% felm(open ~ proption_BigBrands_naics_postal_open + Feb_Avg + prop_home_device_zip | naics_code + countyName + date | 0 |countyName,.)
+model4 <- data_nb %>% felm(open ~ proption_BigBrands_naics_postal_open + Feb_Avg + prop_home_device_zip | naics_code + postal_code + date | 0 |countyName,.)
 
 ## With Controls + FE Naics*Date + FE County * Date
-model5 <- data_nb %>% felm(open ~ proption_BigBrands_naics_postal_open + Feb_Avg + prop_home_device_zip | newfactor + countyDate | 0 |countyName,.)
+model5 <- data_nb %>% felm(open ~ proption_BigBrands_naics_postal_open + Feb_Avg + prop_home_device_zip | newfactor + countyDate  + postal_code | 0 | countyName,.)
 print(paste("Done 5/5"))
 
 #screenreg(list(model1,model2,model3,model4,model5))
 
-screenreg(list(model1,model2,model3,model4,model5),caption = "Regression",caption.above = T,custom.header=list("Open"=1:5),digits=3,reorder.coef=c(2,3,4,5,1),custom.gof.rows=list("Fixed Effect NAICS"=c("No","No","Yes","Yes","No"),"Fixed Effect County" = c("No","No","Yes","Yes","No"), "Fixed Effect Date"=c("No","No","No","Yes","No"),"Fixed Effect NAICS XX Date"=c("No","No","No","No","Yes"),"Fixed Effect County XX Date"=c("No","No","No","No","Yes")))
+screenreg(list(model1,model2,model3,model4,model5),caption = "Regression",caption.above = T,custom.header=list("Open"=1:5),digits=3,reorder.coef=c(2,3,4,5,1),custom.gof.rows=list("Fixed Effect NAICS"=c("No","No","Yes","Yes","No"),"Fixed Effect Zip" = c("No","No","Yes","Yes","Yes"), "Fixed Effect Date"=c("No","No","No","Yes","No"),"Fixed Effect NAICS XX Date"=c("No","No","No","No","Yes"),"Fixed Effect County XX Date"=c("No","No","No","No","Yes")))
 
 
-texreg(list(model1,model2,model3,model4,model5),file = "tables/table2a.tex", caption = "Regression",caption.above = T,custom.header=list("Open"=1:5),digits=3,reorder.coef=c(2,3,4,5,1),custom.gof.rows=list("Fixed Effect NAICS"=c("No","No","Yes","Yes","No"),"Fixed Effect County" = c("No","No","Yes","Yes","No"), "Fixed Effect Date"=c("No","No","No","Yes","No"),"Fixed Effect NAICS XX Date"=c("No","No","No","No","Yes"),"Fixed Effect County XX Date"=c("No","No","No","No","Yes")),table=F)
+texreg(list(model1,model2,model3,model4,model5),file = "tables/table2a.tex", caption = "Regression",caption.above = T,custom.header=list("Open"=1:5),digits=3,reorder.coef=c(2,3,4,5,1),custom.gof.rows=list("Fixed Effect NAICS"=c("No","No","Yes","Yes","No"),"Fixed Effect Zip" = c("No","No","Yes","Yes","Yes"), "Fixed Effect Date"=c("No","No","No","Yes","No"),"Fixed Effect NAICS XX Date"=c("No","No","No","No","Yes"),"Fixed Effect County XX Date"=c("No","No","No","No","Yes")),table=F)
 
 rm(model1,model2,model3,model4,model5)
 
@@ -65,14 +65,14 @@ print("1/3")
 
 ### Controls; Without FE ####
 
-fs2 <- data_nb %>% felm(proption_BigBrands_naics_postal_open  ~ BrandPostalProp + Feb_Avg + prop_home_device_zip | naics_code + countyName + date | 0 | countyName,.)
-iv2 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip | naics_code + countyName + date | (proption_BigBrands_naics_postal_open  ~ BrandPostalProp) | countyName,.)
+fs2 <- data_nb %>% felm(proption_BigBrands_naics_postal_open  ~ BrandPostalProp + Feb_Avg + prop_home_device_zip | naics_code + postal_code + date | 0 | countyName,.)
+iv2 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip | naics_code + postal_code + date | (proption_BigBrands_naics_postal_open  ~ BrandPostalProp) | countyName,.)
 
 print("2/3")
 
 ### Controls; With FE ####
-fs3 <- data_nb %>% felm(proption_BigBrands_naics_postal_open  ~ BrandPostalProp + Feb_Avg + prop_home_device_zip| newfactor + countyDate | 0 | countyName,.)
-iv3 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip |  newfactor + countyDate | (proption_BigBrands_naics_postal_open  ~ BrandPostalProp) | countyName,.)
+fs3 <- data_nb %>% felm(proption_BigBrands_naics_postal_open  ~ BrandPostalProp + Feb_Avg + prop_home_device_zip| newfactor + countyDate + postal_code  | 0 | countyName,.)
+iv3 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip |  newfactor + countyDate + postal_code | (proption_BigBrands_naics_postal_open  ~ BrandPostalProp) | countyName,.)
 
 
 print("3/3")
@@ -80,8 +80,8 @@ print("3/3")
 
 ### Saving 4 Models, excluding No controls, No FE.
 
-screenreg(list(fs2,iv2,fs3,iv3),digits=3,caption = "Regression",caption.above = T,custom.header = list("Model 6" = 1:2, "Model 7" = 3:4),custom.model.names = c("First Stage","IV","First Stage","IV"),reorder.coef=c(4,1,2,3),custom.gof.rows=list("Fixed Effect NAICS"=c("Yes","Yes","No","No"),"Fixed Effect County" = c("Yes","Yes","No","No"), "Fixed Effect Date"=c("Yes","Yes","No","No"),"Fixed Effect NAICS XX Date"=c("No","No","Yes","Yes"),"Fixed Effect County XX Date"=c("No","No","Yes","Yes")),table=F)
+screenreg(list(fs2,iv2,fs3,iv3),digits=3,caption = "Regression",caption.above = T,custom.header = list("Model 6" = 1:2, "Model 7" = 3:4),custom.model.names = c("First Stage","IV","First Stage","IV"),reorder.coef=c(4,1,2,3),custom.gof.rows=list("Fixed Effect NAICS"=c("Yes","Yes","No","No"),"Fixed Effect Zip" = c("Yes","Yes","Yes","Yes"), "Fixed Effect Date"=c("Yes","Yes","No","No"),"Fixed Effect NAICS XX Date"=c("No","No","Yes","Yes"),"Fixed Effect County XX Date"=c("No","No","Yes","Yes") ),table=F)
 
-texreg(list(fs2,iv2,fs3,iv3),digits=3,file = "tables/table2b.tex",caption = "Regression",caption.above = T,custom.header = list("Model 6" = 1:2, "Model 7" = 3:4),custom.model.names = c("First Stage","IV","First Stage","IV"),reorder.coef=c(4,1,2,3),custom.gof.rows=list("Fixed Effect NAICS"=c("Yes","Yes","No","No"),"Fixed Effect County" = c("Yes","Yes","No","No"), "Fixed Effect Date"=c("Yes","Yes","No","No"),"Fixed Effect NAICS XX Date"=c("No","No","Yes","Yes"),"Fixed Effect County XX Date"=c("No","No","Yes","Yes")),table=F)
+texreg(list(fs2,iv2,fs3,iv3),digits=3,file = "tables/table2b.tex",caption = "Regression",custom.header = list("Model 6" = 1:2, "Model 7" = 3:4),custom.model.names = c("First Stage","IV","First Stage","IV"),reorder.coef=c(4,1,2,3),custom.gof.rows=list("Fixed Effect NAICS"=c("Yes","Yes","No","No"),"Fixed Effect Zip" = c("Yes","Yes","Yes","Yes"), "Fixed Effect Date"=c("Yes","Yes","No","No"),"Fixed Effect NAICS XX Date"=c("No","No","Yes","Yes"),"Fixed Effect County XX Date"=c("No","No","Yes","Yes") ),table=F)
 
 rm(fs3,fs2,iv2,iv3)

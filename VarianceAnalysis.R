@@ -1,5 +1,6 @@
 ## Variance between brands in closing decisions
 
+create_variance_data = function(){
 brand_data  = fread("temp/postcovr.csv")
 brand_data = brand_data %>% filter(big_brands)
 
@@ -53,9 +54,14 @@ rm(naics_postal)
     data_nb$newfactor = ifelse(is.na(data_nb$naics_code),NA,data_nb$newfactor)
 
     data_nb['countyDate'] = paste(data_nb$countyName,data_nb$date)
+    data_nb = data_nb %>% group_by(safegraph_place_id) %>% mutate(proption_BigBrands_naics_postal_open  = lag(proption_BigBrands_naics_postal_open, ordery_by = date),
+                                                                  BrandPostalProp = lag(BrandPostalProp, ordery_by = date))
+    data_nb = data_nb %>% drop_na(BrandPostalProp)
+ 
 
    fwrite(data_nb,"temp/data_nb_state_lowVar.csv")
 
+}
 
 model5 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip + proption_BigBrands_naics_postal_open | newfactor + postal_code + date ,.)
 iv3 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip |  newfactor + postal_code + date | (proption_BigBrands_naics_postal_open  ~ BrandPostalProp),.)

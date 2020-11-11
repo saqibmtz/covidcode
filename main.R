@@ -119,4 +119,6 @@ naics_essentail_cutoff = .30   #Percent closed threshold to identify essential s
     fix_names("tables/table2a.tex")
     fix_names("tables/table2b.tex")
     fix_names("tables/table3.tex")
+    fix_names("tables/table4.tex")
+
 

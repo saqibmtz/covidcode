@@ -9,8 +9,9 @@ rm(data)
 
 data_bb = data_bb %>% filter(wday(date)!=1 & wday(date)!=7)
 data_bb = data_bb %>% group_by(safegraph_place_id) %>% mutate(closingStatus = ifelse(!open & !lead(open,1,ordery_by = date) & !lead(open,2,ordery_by = date), T, NA), closingStatus_1day = ifelse(!open,T,NA))
+
 #Display Data
-data_bb %>% filter(safegraph_place_id == "sg:03bc8f3dfdf64cffa956303dd1ab923a") %>% select(date, open, closingStatus) %>% as.data.frame() 
+#data_bb %>% filter(safegraph_place_id == "sg:03bc8f3dfdf64cffa956303dd1ab923a") %>% select(date, open, closingStatus) %>% as.data.frame() 
 
 data_bb = data_bb %>% group_by(safegraph_place_id) %>% arrange(date) %>% fill(closingStatus)
 data_bb = data_bb %>% group_by(safegraph_place_id) %>% arrange(date) %>% fill(closingStatus_1day)
@@ -22,17 +23,17 @@ data_bb$closingStatus_1day[is.na(data_bb$closingStatus_1day)] = F
 data_bb_agg = data_bb %>% group_by(postal_code,naics_code,date) %>% summarise(closedStatusBrand = ifelse(sum(closingStatus)>0,T,F),closedStatusBrand_1day = ifelse(sum(closingStatus_1day)>0,T,F))
 
 ##Displaying the data
-data_bb_agg %>% arrange(postal_code,naics_code,date) %>% select(naics_code,closedStatusBrand) %>% head(.,40) %>% as.data.frame()
+#data_bb_agg %>% arrange(postal_code,naics_code,date) %>% select(naics_code,closedStatusBrand) %>% head(.,40) %>% as.data.frame()
 
 ## Plot
-p1 = data_bb_agg %>% group_by(naics_code,date) %>% summarise(percent_closed = sum(closedStatusBrand)/n())  %>% ggplot(.) + geom_line(aes(x = date, y = percent_closed, color = naics_code, group = naics_code))
-ggsave("plots/eventstudy/naics_plot_3day.jpg",p1)
+#p1 = data_bb_agg %>% group_by(naics_code,date) %>% summarise(percent_closed = sum(closedStatusBrand)/n())  %>% ggplot(.) + geom_line(aes(x = date, y = percent_closed, color = naics_code, group = naics_code))
+#ggsave("plots/eventstudy/naics_plot_3day.jpg",p1)
 
-p1 <- data_bb_agg %>% ggplot(.) + geom_smooth(aes(x = date, y = as.integer(closedStatusBrand)),se=T) + ylab("Percent Unit in Treatment") +xlab("Date")
-ggsave("plots/eventstudy/treatmentStatus_3days.jpg",p1)
+#p1 <- data_bb_agg %>% ggplot(.) + geom_smooth(aes(x = date, y = as.integer(closedStatusBrand)),se=T) + ylab("Percent Unit in Treatment") +xlab("Date")
+#ggsave("plots/eventstudy/treatmentStatus_3days.jpg",p1)
 
 ## List of NAICS for end-date
-data_bb_agg %>% group_by(naics_code,date) %>% summarise(percent_closed = sum(closedStatusBrand)/n()) %>% filter(date == end_date) %>% as.data.frame() %>% arrange(percent_closed) %>% left_join(naics_codes)
+#data_bb_agg %>% group_by(naics_code,date) %>% summarise(percent_closed = sum(closedStatusBrand)/n()) %>% filter(date == end_date) %>% as.data.frame() %>% arrange(percent_closed) %>% left_join(naics_code)
 
 ### Reading community Est. Data and Merging
 data_nb = fread("filedata/data_nb_state.csv")
@@ -90,13 +91,10 @@ plot_results = function(model, outputLocation){
     ggsave(outputLocation,p1)
 }
 
-plot_results(model2,"plots/eventstudynew/laggedPlot2.jpg")
-plot_results(model3,"plots/eventstudynew/laggedPlot3.jpg")
-plot_results(model4,"plots/eventstudynew/laggedPlot4.jpg")
 plot_results(model5,"plots/eventstudynew/laggedPlot5_relevel_1.jpg")
 
 
-p3 = tidy(model5,conf.int=T) %>% mutate(term = extract_numeric(term)) %>% ggplot(.,aes(x=term,y=estimate, ymin = conf.low, ymax = conf.high)) + geom_crossbar(fill = "#D55E00", color = "#D55E00", alpha = 1,width=.3) + geom_point(size = 1) + xlab("Lag") + ylab("Coefficient") + ylim(-.05,.05) + geom_vline(xintercept = -1,linetype = "dashed",size = 0.3) + geom_hline(yintercept = 0,size = 0.5)  + theme_bw() + geom_point(aes(x=-1,y=0), size = 1)
+p3 = tidy(model5,conf.int=T) %>% mutate(term = extract_numeric(term)) %>% ggplot(.,aes(x=term,y=estimate, ymin = conf.low, ymax = conf.high)) + geom_crossbar(fill = "#D55E00", color = "#D55E00", alpha = 1,width=.3) + geom_point(size = 1) + xlab("Days to/Since Brand Est. Closing") + ylab("Coefficient") + ylim(-.05,.05) + geom_vline(xintercept = -1,linetype = "dashed",size = 0.3) + geom_hline(yintercept = 0,size = 0.5)  + theme_bw() + geom_point(aes(x=-1,y=0), size = 1)
 ggsave("plots/eventstudynew/temp.jpg",p3,width  = 7, height = 5)
 ggsave("plots/eventstudynew/temp2.jpg",p1,width  = 8, height = 5)
 

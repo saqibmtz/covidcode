@@ -4,7 +4,7 @@ generate_summary_table = function(){
   
     data_nb$date = ymd(data_nb$date)
     
-    data_day = data_nb %>% filter(date == begin_date)
+    data_day = data_nb %>% filter(date == end_date)
     
     distc = data_day %>% group_by(postal_code, naics_code) %>% summarise(brands = mean(BigBrandStores))
     ## Aggregating at postal-naics level, value of BigBrandsStores is same for all local est. in postal-naics pair = mean(BigBrandStores)

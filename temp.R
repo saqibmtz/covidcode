@@ -1,3 +1,18 @@
+## Nov 10. IV regression with County x Date clustering
+fs3 <- data_nb %>% felm(proption_BigBrands_naics_postal_open  ~ BrandPostalProp + Feb_Avg + prop_home_device_zip| newfactor + countyDate + postal_code  | 0 | countyDate,.)
+iv3 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip |  newfactor + countyDate + postal_code | (proption_BigBrands_naics_postal_open  ~ BrandPostalProp) | countyDate,.)
+
+
+
+## Nov 10. IV regression with NAICS clustered standard errors
+
+screenreg(list(fs3,iv3),digits=3,caption = "Regression",caption.above = T,custom.model.names = c("First Stage","IV"),reorder.coef=c(4,1,2,3),custom.gof.rows=list("Fixed Effect Zip" = c("Yes","Yes"),"Fixed Effect NAICS XX Date"=c("Yes","Yes"),"Fixed Effect County XX Date"=c("Yes","Yes") ),table=F)
+
+texreg(list(fs3,iv3),digits=3, file = "tables/temp.tex", caption = "Regression",caption.above = T,custom.model.names = c("First Stage","IV"),reorder.coef=c(4,1,2,3),custom.gof.rows=list("Fixed Effect Zip" = c("Yes","Yes"),"Fixed Effect NAICS XX Date"=c("Yes","Yes"),"Fixed Effect County XX Date"=c("Yes","Yes") ),table=F)
+
+fix_names("tables/temp.tex")
+
+
 ## Oct 23
 ## For each chain establishment, find the median income and age in the census block or tract. Then for each chain, compute the variance in both of these variables. Exclude those with the lowest amount of variance from the IV and reestimate the treatment effect
 
