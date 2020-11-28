@@ -34,6 +34,9 @@ fwrite(data,"temp/preRegData_open2_open3.csv")
 
 data = fread("temp/preRegData_open2_open3.csv")
 data$date = ymd(data$date)
+data = data %>% group_by(safegraph_place_id) %>% mutate(BrandPostalProp2 = lag(BrandPostalProp2, order_by = date),BrandPostalProp3 = lag(BrandPostalProp3, order_by = date),
+                                                        proption_BigBrands_naics_postal_open2 = lag(proption_BigBrands_naics_postal_open2, order_by = date), proption_BigBrands_naics_postal_open3 = lag(proption_BigBrands_naics_postal_open3, order_by = date))
+
 
 data_nb = data %>% filter(BrandNational==0)
 rm(data)
@@ -41,19 +44,21 @@ rm(data)
 data_nb = data_nb %>% filter(!is.na(BrandPostalProp))
 
 data_nb['newfactor'] = paste(data_nb$date,data_nb$naics_code)
+data_nb['countyDate'] = paste(data_nb$countyName,data_nb$date)
+
 data_nb$newfactor = ifelse(is.na(data_nb$naics_code),NA,data_nb$newfactor)
 
 
 #iv_open1 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device |  newfactor + postal_code | (proption_BigBrands_naics_postal_open  ~ BrandPostalProp) | postal_code,.)
-fs_open2 <- data_nb %>% felm(proption_BigBrands_naics_postal_open2  ~ BrandPostalProp2 + Feb_Avg + prop_home_device_zip| newfactor + postal_code | 0 | postal_code,.)
-iv_open2 <- data_nb %>% felm(open2 ~  Feb_Avg + prop_home_device_zip |  newfactor + postal_code | (proption_BigBrands_naics_postal_open2  ~ BrandPostalProp2) | postal_code,.)
+fs_open2 <- data_nb %>% felm(proption_BigBrands_naics_postal_open2  ~ BrandPostalProp2 + Feb_Avg + prop_home_device_zip| newfactor + countyDate + postal_code | 0 | countyName,.)
+iv_open2 <- data_nb %>% felm(open2 ~  Feb_Avg + prop_home_device_zip |  newfactor + countyDate + postal_code | (proption_BigBrands_naics_postal_open2  ~ BrandPostalProp2) | countyName,.)
 
-fs_open3 <- data_nb %>% felm(proption_BigBrands_naics_postal_open3  ~ BrandPostalProp3 + Feb_Avg + prop_home_device_zip| newfactor + postal_code | 0 | postal_code,.)
-iv_open3 <- data_nb %>% felm(open3 ~  Feb_Avg + prop_home_device_zip |  newfactor + postal_code | (proption_BigBrands_naics_postal_open3  ~ BrandPostalProp3) | postal_code,.)
+fs_open3 <- data_nb %>% felm(proption_BigBrands_naics_postal_open3  ~ BrandPostalProp3 + Feb_Avg + prop_home_device_zip| newfactor + countyDate + postal_code | 0 | countyName,.)
+iv_open3 <- data_nb %>% felm(open3 ~  Feb_Avg + prop_home_device_zip |  newfactor + countyDate + postal_code | (proption_BigBrands_naics_postal_open3  ~ BrandPostalProp3) | countyName,.)
 
-screenreg(list(fs_open2,iv_open2,fs_open3,iv_open3),digits=3,caption = "Regression",caption.above = T,custom.header = list("Model 10" = 1:2, "Model 11" = 3:4),custom.model.names = c("First Stage","IV","First Stage","IV"),custom.coef.names = c("BrandPostalProp","Feb_Avg","prop_home_device_zip","proption_BigBrands_naics_postal_open","BrandPostalProp","proption_BigBrands_naics_postal_open"),reorder.coef=c(4,1,2,3),custom.gof.rows = list("Fixed Effect Date-NAICS"=c("Yes","Yes","Yes","Yes"),"Fixed Effect PostalCode" = c("Yes","Yes","Yes","Yes")), include.fstatistic = T,table=F)
+screenreg(list(fs_open2,iv_open2,fs_open3,iv_open3),digits=3,caption = "Regression",caption.above = T,custom.header = list("Model 10" = 1:2, "Model 11" = 3:4),custom.model.names = c("First Stage","IV","First Stage","IV"),custom.coef.names = c("BrandPostalProp","Feb_Avg","prop_home_device_zip","proption_BigBrands_naics_postal_open","BrandPostalProp","proption_BigBrands_naics_postal_open"),reorder.coef=c(4,1,2,3),custom.gof.rows = list("Fixed Effect NAICS x Date"=c("Yes","Yes","Yes","Yes"),"Fixed Effect County x Date"=c("Yes","Yes","Yes","Yes"), "Fixed Effect Zip" = c("Yes","Yes","Yes","Yes")),table=F)
 
-texreg(list(fs_open2,iv_open2,fs_open3,iv_open3),digits=3,file = "tables/table_appendex_open.tex",caption = "Regression",caption.above = T,custom.header = list("Model 10" = 1:2, "Model 11" = 3:4),custom.model.names = c("First Stage","IV","First Stage","IV"),custom.coef.names = c("BrandPostalProp","Feb_Avg","prop_home_device_zip","proption_BigBrands_naics_postal_open","BrandPostalProp","proption_BigBrands_naics_postal_open"),reorder.coef=c(4,1,2,3),custom.gof.rows = list("Fixed Effect Date-NAICS"=c("Yes","Yes","Yes","Yes"),"Fixed Effect PostalCode" = c("Yes","Yes","Yes","Yes")), include.fstatistic = T,table=F)
+texreg(list(fs_open2,iv_open2,fs_open3,iv_open3),digits=3,file = "tables/table_appendex_open.tex",caption = "Regression",caption.above = T,custom.header = list("Model 10" = 1:2, "Model 11" = 3:4),custom.model.names = c("First Stage","IV","First Stage","IV"),custom.coef.names = c("BrandPostalProp","Feb_Avg","prop_home_device_zip","proption_BigBrands_naics_postal_open","BrandPostalProp","proption_BigBrands_naics_postal_open"),reorder.coef=c(4,1,2,3),custom.gof.rows = list("Fixed Effect NAICS x Date"=c("Yes","Yes","Yes","Yes"),"Fixed Effect County x Date"=c("Yes","Yes","Yes","Yes"), "Fixed Effect Zip" = c("Yes","Yes","Yes","Yes")),table=F)
 
 source(file = "code/fix_names.r")
 fix_names("tables/table_appendex_open.tex")

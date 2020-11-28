@@ -8,7 +8,9 @@ data_nb$date = ymd(data_nb$date)
 ############# Continuous Models #############
 #############################################
 
-
+############
+##  Not Running these for the results.  Discrete model code (below) are included in the table. These are for comparison. ##
+############
 
 data_nb['interact'] = data_nb["Feb_Avg"]*data_nb$proption_BigBrands_naics_postal_open
 data_nb['interact_expsoure'] = data_nb["Feb_Avg"]*data_nb$BrandPostalProp
@@ -112,9 +114,9 @@ names(dummies) = c("Expsoure_Low","Exposure_Mid","Exposure_High")
 data_nb = cbind(data_nb,dummies)
 
 
-model3_orig<- data_nb %>% felm(open ~  Feb_Avg + prop_home_device + Visitors_Mid + Visitors_High|  newfactor + postal_code  | ( Proportion_Mid + Proportion_High +  proption_BigBrands_naics_postal_open  ~  Exposure_Mid + Exposure_High + BrandPostalProp) | postal_code,.)
+model3_orig<- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip + Visitors_Mid + Visitors_High|  newfactor + postal_code  | ( Proportion_Mid + Proportion_High +  proption_BigBrands_naics_postal_open  ~  Exposure_Mid + Exposure_High + BrandPostalProp) | countyName,.)
 
-model3<- data_nb %>% felm(open ~  Feb_Avg + prop_home_device + Visitors_Mid + Visitors_High + Above_FebMed |  newfactor + postal_code  | ( Proportion_Mid + Proportion_High +  proption_BigBrands_naics_postal_open + Proportion_Above_FebMed  ~  Exposure_Mid + Exposure_High + BrandPostalProp + Expsoure_Above_FebMed) | postal_code,.)
+model3<- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip + Visitors_Mid + Visitors_High + Above_FebMed |  newfactor + postal_code  | ( Proportion_Mid + Proportion_High +  proption_BigBrands_naics_postal_open + Proportion_Above_FebMed  ~  Exposure_Mid + Exposure_High + BrandPostalProp + Expsoure_Above_FebMed) | countyName,.)
 
 stargazer(model3_orig,model3,type = "text",covariate.labels=c("Feb Avg","Pct Devices Home","Local Customers(Mid)","Local Customers (high)", "Above Feb Median","Prop Open X Local Customers(Med)","Prop Open X Local Customers(High)"," Prop. Open"," Prop Open X Above Feb Median"))
 
@@ -135,15 +137,16 @@ dummies = data_nb$BrandPostalProp * dummies
 names(dummies) = c("Expsoure_NotLoyal","Exposure_Loyal")
 data_nb = cbind(data_nb,dummies)
 
-model2_orig<- data_nb %>% felm(open ~  Feb_Avg + prop_home_device + Loyal |  newfactor + postal_code  | ( Proportion_Loyal +  proption_BigBrands_naics_postal_open  ~  Exposure_Loyal + BrandPostalProp) | postal_code,.)
 
-model2<- data_nb %>% felm(open ~  Feb_Avg + prop_home_device + Loyal + Above_FebMed |  newfactor + postal_code  | ( Proportion_Loyal +  proption_BigBrands_naics_postal_open + Proportion_Above_FebMed ~  Exposure_Loyal + BrandPostalProp  + Expsoure_Above_FebMed) | postal_code,.)
+model2_orig<- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip + Loyal |  newfactor + postal_code  | ( Proportion_Loyal +  proption_BigBrands_naics_postal_open  ~  Exposure_Loyal + BrandPostalProp) | countyName,.)
+
+model2<- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip + Loyal + Above_FebMed |  newfactor + postal_code  | ( Proportion_Loyal +  proption_BigBrands_naics_postal_open + Proportion_Above_FebMed ~  Exposure_Loyal + BrandPostalProp  + Expsoure_Above_FebMed) | countyName,.)
 
 stargazer(model2_orig,model2, type = "text",covariate.labels=c("Feb Avg","Pct Devices Home","Loyal Customers","Above Feb Median","Prop Open X Loyal Customers","Prop. Open","Prop Open X Above Feb Med"))
 
-screenreg(list(model3,model2),digits=3,caption = "Regression",caption.above = T, custom.model.names =  c("Model 12","Model 13"),custom.coef.names = c("Feb_Avg","prop_home_device_zip","Local Visitors (Med)","Local Visitors (High)","Avg. February Visitors(High)","Prop. Branch Est. Open XX Local Visitors (Med)","Prop. Branch Est. Open XX Local Visitors (High)","Prop. Branch Est. Open","Prop. Branch Est. Open XX Avg. February Visitors(High)","Loyal Customers","Prop. Branch Est. Open XX Loyal Customers"),reorder.coef=c(8,6,7,11,3,4,10,1,2,5,9),custom.gof.rows=list("Fixed Effect Date-NAICS"=c("Yes","Yes"),"Fixed Effect PostalCode" = c("Yes","Yes")),include.fstatistic = T,table=F,custom.note = paste("\\item %stars. Note"))
+screenreg(list(model3,model2),digits=3,caption = "Regression",caption.above = T, custom.model.names =  c("Model 15","Model 16"),custom.coef.names = c("Feb_Avg","prop_home_device_zip","Local Visitors (Med)","Local Visitors (High)","Avg. February Visitors(High)","Prop. Branch Est. Open XX Local Visitors (Med)","Prop. Branch Est. Open XX Local Visitors (High)","Prop. Branch Est. Open","Prop. Branch Est. Open XX Avg. February Visitors(High)","Loyal Customers","Prop. Branch Est. Open XX Loyal Customers"),reorder.coef=c(8,6,7,11,3,4,10,1,2,5,9),custom.gof.rows=list("Fixed Effect Date-NAICS"=c("Yes","Yes"),"Fixed Effect PostalCode" = c("Yes","Yes")),include.fstatistic = T,table=F,custom.note = paste("\\item %stars. Note"))
 
-texreg(list(model3,model2),digits=3,file="tables/appendix2.tex",caption = "Regression",caption.above = T, custom.model.names =  c("Model 12","Model 13"),custom.coef.names = c("Feb_Avg","prop_home_device_zip","Local Visitors (Med)","Local Visitors (High)","Avg. February Visitors(High)","Prop. Branch Est. Open XX Local Visitors (Med)","Prop. Branch Est. Open XX Local Visitors (High)","Prop. Branch Est. Open","Prop. Branch Est. Open XX Avg. February Visitors(High)","Loyal Customers","Prop. Branch Est. Open XX Loyal Customers"),reorder.coef=c(8,6,7,11,3,4,10,1,2,5,9),custom.gof.rows=list("Fixed Effect Date-NAICS"=c("Yes","Yes"),"Fixed Effect PostalCode" = c("Yes","Yes")),include.fstatistic = T,table=F,custom.note = paste("\\item %stars. Note"))
+texreg(list(model3,model2),digits=3,file="tables/appendix2.tex",caption = "Regression",caption.above = T, custom.model.names =  c("Model 15","Model 16"),custom.coef.names = c("Feb_Avg","prop_home_device_zip","Local Visitors (Med)","Local Visitors (High)","Avg. February Visitors(High)","Prop. Branch Est. Open XX Local Visitors (Med)","Prop. Branch Est. Open XX Local Visitors (High)","Prop. Branch Est. Open","Prop. Branch Est. Open XX Avg. February Visitors(High)","Loyal Customers","Prop. Branch Est. Open XX Loyal Customers"),reorder.coef=c(8,6,7,11,3,4,10,1,2,5,9),custom.gof.rows=list("Fixed Effect Date-NAICS"=c("Yes","Yes"),"Fixed Effect PostalCode" = c("Yes","Yes")),include.fstatistic = T,table=F,custom.note = paste("\\item %stars. Note"))
 
 
 source(file = "code/fix_names.r")

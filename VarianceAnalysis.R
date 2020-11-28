@@ -7,7 +7,8 @@ brand_data = brand_data %>% filter(big_brands)
 brand_data$date = ymd(brand_data$date)
 
 variances = brand_data %>% group_by(brands,date) %>% summarise(var = sd(open)) %>% group_by(brands) %>% summarise(meanVar = mean(var),varvar = sd(var))
-var_30 = variances %>% filter(meanVar <= .30)
+#var_30 = variances %>% filter(meanVar <= .25) %>% arrange(meanVar)
+var_30 = variances %>% filter(meanVar < quantile(meanVar,0.25)) %>% arrange(meanVar)
 
 BrandNaicsPostal_prop = fread("filedata/PostalBrandDictState.csv")
 BrandNaicsPostal_prop$date = ymd(BrandNaicsPostal_prop$date)

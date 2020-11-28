@@ -69,18 +69,24 @@ data_nb_agg = data_nb_agg %>% mutate(lag = date - treated_date)
 data_nb_agg$lag[is.na(data_nb_agg$lag)] = 0
 data_nb_agg$lag[data_nb_agg$lag > 14] = 14
 data_nb_agg$lag[data_nb_agg$lag < -14] = -14
+data_nb_agg$lag2 = data_nb_agg$lag
 
 data_nb_agg = data_nb_agg %>% mutate(DateNaics = paste(date,naics_code), DateZip = paste(date,postal_code), DateCounty = paste(date,countyName))
 data_nb_agg$lag = relevel(factor(data_nb_agg$lag),ref = "-1")
 
+temp = data_nb %>% select(date,postal_code, naics_code, prop_home_device_zip) %>% distinct(date,postal_code, naics_code, prop_home_device_zip)
+data_nb_agg = left_join(data_nb_agg,temp)
 #data_nb_agg = data_nb_agg %>% mutate(DateNaics = paste(date, naics_code),DateZip = paste(date, postal_code))
 
 #model1 = data_nb_agg %>% felm(percent_closed_community ~ factor(lag),.)
 #model2 = data_nb_agg %>% felm(percent_closed_community ~ factor(lag) | date + postal_code + naics_code,.)
 #model3 = data_nb_agg %>% felm(percent_closed_community ~ factor(lag)| date + postal_code + DateNaics,.)
 #model4 = data_nb_agg %>% felm(percent_closed_community ~ factor(lag) | DateNaics + DateZip,.)
-model5 = data_nb_agg %>% felm(percent_closed_community ~ lag | DateNaics + DateCounty,.)
 
+model5 = data_nb_agg %>% felm(percent_closed_community ~ lag | DateNaics + DateCounty,.)
+model6 = data_nb_agg %>% felm(percent_closed_community ~ lag  + prop_home_device_zip | DateNaics + DateCounty,.)
+
+screenreg(list(model5, model6, digits = 3))
 
 #stargazer(model1, model2, model3, model4, type = "text",covariate.labels = c("Treatment (BrandClosedStatus) "))
 
@@ -101,30 +107,26 @@ ggsave("plots/eventstudynew/temp2.jpg",p1,width  = 8, height = 5)
 p2 = dwplot(tidy(model2)) + theme_bw() + ylab("Coefficient Estimate") + xlab("Days Lead Treatment") + ggtitle("Effect of Treatment (3 days) on Prop. Of Local Store Closing") 
 ggsave("plots/eventstudynew/laggedPlot_3days_Zip_DateNaics.jpg",p2)
 
-### Generating Event study figure
+###########################################################
+######## Generating Event study table  ###################
+###########################################################
 
 
-days = -14:14
+model6 = data_nb_agg %>% felm(percent_closed_community ~ post  + prop_home_device_zip | DateNaics + DateCounty,.)
 
-get_delayed_estimates = function(data_in, days_lagged){
-    if(days_lagged>0){
-        data_in = data_in %>% group_by(postal_code,naics_code) %>% mutate(percent_closed_community_lagged = lag(percent_closed_community,1*days_lagged, ordery_by = date))
-    }
-    else{
-        data_in = data_in %>% group_by(postal_code,naics_code) %>% mutate(percent_closed_community_lagged = lead(percent_closed_community,-1*days_lagged,ordery_by = date))
-    }
-    totalObs = sum(!is.na(data_in$closedStatusBrand_lagged))
-    model5 = tidy(data_in %>% felm(percent_closed_community_lagged ~ closedStatusBrand | date + postal_code + DateNaics,.)) %>% mutate(lag = days_lagged, Obs = totalObs)
-
-    return(model5)
-}
-
-out = lapply(days, function(x) get_delayed_estimates(data_nb_agg,x))
-
-out2 = out %>% do.call(rbind, .)
-out2['model'] = out2$lag
-out2$term[out2$term == "closedStatusBrand_laggedTRUE"] = "LaggedTreatment"
-p2 = small_multiple(out2) + theme_bw() + ylab("Coefficient Estimate") + xlab("Days Lead Treatment") + ggtitle("Effect of Treatment (3 days) on Prop. Of Local Store Closing")
-ggsave("plots/eventstudy/laggedPlot_3days_Zip_DateNaics.jpg",p2)
+model5 = data_nb_agg %>% felm(percent_closed_community ~ post | DateNaics + DateCounty,.)
+stargazer(model5, model6, type = "text")
 
 
+data_nb_agg = data_nb_agg %>% filter(abs(lag2)<=7)
+
+model7 = data_nb_agg %>% felm(percent_closed_community ~ lag | DateNaics + DateCounty,.)
+model8 = data_nb_agg %>% felm(percent_closed_community ~ lag  + prop_home_device_zip | DateNaics + DateCounty,.)
+
+
+screenreg(list(model5,model6,model7, model8),digits = 3, custom.header = list("Community Est. Closing" = 1:4),custom.model.names = c("Model 17", "Model 18","Model 19", "Model 20"),custom.gof.rows=list("Controls" = c("No","Yes","No","Yes"), "Fixed Effect Naics x Date "=c("Yes","Yes","Yes","Yes"), "Fixed Effect County x Date" = c("Yes","Yes","Yes","Yes")),table=F)
+
+texreg(list(model5,model6,model7, model8),digits = 3, file = "tables/EventStudy.tex", custom.header = list("Community Est. Closing" = 1:4),custom.model.names = c("Model 17", "Model 18","Model 19", "Model 20"),custom.gof.rows=list("Controls" = c("No","Yes","No","Yes"), "Fixed Effect Naics x Date "=c("Yes","Yes","Yes","Yes"), "Fixed Effect County x Date" = c("Yes","Yes","Yes","Yes")),table=F)
+
+fix_names("tables/EventStudy.tex")
+fix_names("tables/EventStudy2.tex")

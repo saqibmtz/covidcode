@@ -61,10 +61,40 @@ resid_y_4 <- resid(reg_y) + mean(data_nb$PercentWhite)
 plot4 = ggplot()  + stat_summary_bin(aes(y = resid_y_4, x = resid_x_2),fun='mean',bins = 20,geom = "point",color="red")  + ylab("Prop. White") + xlab("National Chain Opening Exposure") + labs(title ="Prop. White vs. National Chain Opening Exposure") + ylim(0,1) + theme_bw()
 ggsave("plots/iv/bin_IV_PercentWhite_IV.jpg",plot4)
 
-reg_y <- felm(PercentAsian ~ 1 | newfactor + postal_code + date, data_nb)
-resid_y_5 <- resid(reg_y) + mean(data_nb$PercentAsian)
-plot5 =  ggplot()  + stat_summary_bin(aes(y = resid_y_5, x = resid_x_2),fun='mean',bins = 20,geom = "point",color="red")  + ylab("Prop. Asian") + xlab("National Chain Opening Exposure") + labs(title ="Prop. Asian vs. National Chain Opening Exposure") + ylim(0,1) + theme_bw()
-ggsave("plots/iv/bin_IV_PercentAsian_IV.jpg",plot5)
+#reg_y <- felm(PercentAsian ~ 1 | newfactor + postal_code + date, data_nb)
+#resid_y_5 <- resid(reg_y) + mean(data_nb$PercentAsian)
+#plot5 =  ggplot()  + stat_summary_bin(aes(y = resid_y_5, x = resid_x_2),fun='mean',bins = 20,geom = "point",color="red")  + ylab("Prop. Asian") + xlab("National Chain Opening Exposure") + labs(title ="Prop. Asian vs. National Chain Opening Exposure") + ylim(0,1) + theme_bw()
+#ggsave("plots/iv/bin_IV_PercentAsian_IV.jpg",plot5)
+
+#########################
+########### Age ########
+########################
+
+data_nb = fread("filedata/data_nb_state.csv")
+data_nb$CBGFIPS = str_pad(data_nb$CBGFIPS,12,side = "left",pad = "0")
+
+age_data = fread("rawdata/census_age_block.csv")
+names(age_data) = gsub("Geo_","",names(age_data))
+names(age_data)[14:26] = c("TotalPopulation","Under5","A5to9","A10to14","A15to17","A18to24","A25to34","A35to44","A45to54","A55to64","A65to74","A75to84","A85andOver")
+
+age_data = age_data %>% group_by(FIPS,STATE,COUNTY,TRACT)  %>% mutate(avg_age = (Under5*2.5 + A5to9*7.5 + A10to14*12 + A15to17*16 + A18to24*21 + A25to34*29.5 + A35to44*39.5 + A45to54*49.5 + A55to64*59.5 + A65to74*69.5 + A75to84*79.5 + A85andOver*92)/TotalPopulation)
+
+age_data = age_data %>% select(FIPS,STATE,COUNTY,TRACT,avg_age,TotalPopulation)
+
+age_data$FIPS = as.character(age_data$FIPS)
+
+data_nb = left_join(data_nb, age_data, by = c("CBGFIPS" = "FIPS"))
+data_nb = data_nb %>% filter(!is.na(avg_age))
+data_nb = data_nb %>% group_by(postal_code) %>% mutate(avg_age_zip = sum(avg_age*TotalPopulation,na.rm = T)/sum(TotalPopulation,na.rm = T))
+
+reg_x <- data_nb %>% felm(BrandPostalProp ~ 1 | newfactor + postal_code + date,.)
+resid_x_3 <- resid(reg_x) + mean(data_nb$BrandPostalProp)
+
+reg_y <- felm(avg_age_zip ~ 1 | newfactor + postal_code + date, data_nb)
+resid_y_6 <- resid(reg_y) + mean(data_nb$avg_age)
+plot5 =  ggplot()  + stat_summary_bin(aes(y = resid_y_6, x = resid_x_3),fun='mean',bins = 20,geom = "point",color="red")  + ylab("Mean Age") + xlab("National Chain Opening Exposure") + labs(title ="Mean Age vs. National Chain Opening Exposure") + theme_bw() + ylim(0,100)
+ggsave("plots/iv/bin_IV_Age.jpg",plot5)
+
 
 
 ###########################################
@@ -92,9 +122,9 @@ resid_x_6 <- resid(reg_x) + mean(data_nb$BrandPostalProp)
 
 #### Covid Cases ### 
 reg_y <- felm(cases ~ 1 | newfactor + DateZip, data_nb)
-resid_y_6 <- resid(reg_y) + mean(data_nb$cases)
+resid_y_7 <- resid(reg_y) + mean(data_nb$cases)
 
-plot6 =  ggplot() + stat_summary_bin(aes(y = resid_y_6, x = resid_x_6),fun='mean',bins = 20,geom = "point",color="red")  + xlab("National Chain Opening Exposure")+ ylab("Number of COVID Cases")  + labs(title ="Covid Cases vs. National Chain Opening Exposure") + ylim(0,max(data_nb$cases,na.rm=T)/100) + theme_bw()
+plot6 =  ggplot() + stat_summary_bin(aes(y = resid_y_7, x = resid_x_6),fun='mean',bins = 20,geom = "point",color="red")  + xlab("National Chain Opening Exposure")+ ylab("Number of COVID Cases")  + labs(title ="Covid Cases vs. National Chain Opening Exposure") + ylim(0,max(data_nb$cases,na.rm=T)/100) + theme_bw()
 ggsave("plots/iv/bin_IV_covidCases.jpg",plot6) 
 
 plots = grid.arrange(plot2,plot4,plot5,plot6,ncol=2)

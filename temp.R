@@ -1,3 +1,25 @@
+###
+figure_date = ymd("2020-03-25")
+temp = data_nb %>% filter(naics_code == 713 & date == ymd("2020-03-26") & (postal_code == 75150 | postal_code == 75409)) %>% distinct(date, brands, BrandPostalProp)
+brand1 = "Anytime Fitness"
+brand2 = "Orangetheory Fitness"
+
+filein = "filedata/preRegData_state.csv"
+data = fread(filein)
+data$date = ymd(data$date)
+
+temp2 = data %>% filter((brands == brand1 | brands == brand2) & date == figure_date)
+
+temp2 = left_join(temp2, pincodes, by = c("postal_code" = "zip"))
+open_out = temp2 %>% filter(state_id != "TX") %>% group_by(brands) %>% summarise(total = n(), total_open = sum(open)) %>% mutate(BrandPostal = total_open/total)
+
+
+## Nov 11 fixing standard errors
+
+stargazer(iv_open3, se=list(coef(summary(iv_open3,cluster = c("countyName")))[, 2]), type = "text")
+
+
+
 ## Nov 10. IV regression with County x Date clustering
 fs3 <- data_nb %>% felm(proption_BigBrands_naics_postal_open  ~ BrandPostalProp + Feb_Avg + prop_home_device_zip| newfactor + countyDate + postal_code  | 0 | countyDate,.)
 iv3 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip |  newfactor + countyDate + postal_code | (proption_BigBrands_naics_postal_open  ~ BrandPostalProp) | countyDate,.)

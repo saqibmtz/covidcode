@@ -71,7 +71,7 @@ fwrite(community_cosine_dissimilar,"filedata/cosineDissimilar.csv")
 
 ####
 
-data_nb = fread("filedata/data_nb_state.csv")
+data_nb = fread("filedata/data_nb_state.csv") %>% distinct(safegraph_place_id) %>% nrow()
 data_nb$date = ymd(data_nb$date)
 
 data_nb = inner_join(data_nb,community_cosine_dissimilar)

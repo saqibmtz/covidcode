@@ -44,7 +44,7 @@ get_hetro_coeff_3splits <- function(data_in, percentile_based = F){
 
 
     #Model1 OLS Continuous * Categorical
-    model1 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip +  proption_BigBrands_naics_postal_open + Visitors_Mid + Visitors_High  + Proportion_Mid + Proportion_High|  newfactor + postal_code | 0 | countyName,.)
+    model1 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip +  proption_BigBrands_naics_postal_open + Visitors_Mid + Visitors_High  + Proportion_Mid + Proportion_High|   newfactor + countyDate + postal_code| 0 | countyName,.)
 
     print(paste("Done 1/4"))
 
@@ -54,7 +54,7 @@ get_hetro_coeff_3splits <- function(data_in, percentile_based = F){
     print(paste("Done 2/4"))
 
     #Model3 IV Continuous * Categorical
-    model3<- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip + Visitors_Mid + Visitors_High|  newfactor + postal_code | ( Proportion_Mid + Proportion_High +  proption_BigBrands_naics_postal_open  ~  Exposure_Mid + Exposure_High + BrandPostalProp) | countyName,.)
+    model3<- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip + Visitors_Mid + Visitors_High|   newfactor + countyDate + postal_code | ( Proportion_Mid + Proportion_High +  proption_BigBrands_naics_postal_open  ~  Exposure_Mid + Exposure_High + BrandPostalProp) | countyName,.)
 
     print(paste("Done 3/4"))
 
@@ -89,10 +89,10 @@ get_loyalty_coeff = function(data_nb){
     print("Created Dummies for Loyal, Running Reg")
 
     ## OLS
-    model1 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip +  proption_BigBrands_naics_postal_open + Loyal + Proportion_Loyal |  newfactor + postal_code | 0 | countyName,.)
+    model1 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip +  proption_BigBrands_naics_postal_open + Loyal + Proportion_Loyal |   newfactor + countyDate + postal_code | 0 | countyName,.)
 
 
-    model2<- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip + Loyal |  newfactor + postal_code  | ( Proportion_Loyal +  proption_BigBrands_naics_postal_open  ~  Exposure_Loyal + BrandPostalProp) | countyName,.)
+    model2<- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip + Loyal |   newfactor + countyDate + postal_code | ( Proportion_Loyal +  proption_BigBrands_naics_postal_open  ~  Exposure_Loyal + BrandPostalProp) | countyName,.)
 
     return(list(model1,model2))
 
