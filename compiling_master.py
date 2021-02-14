@@ -28,7 +28,7 @@ def compile_master():
     df_merged= df_merged.sort_values(by='date_range_start')
     df_merged=df_merged.groupby('safegraph_place_id').apply(lambda x:[element for list_ in x for element in list_]).reset_index()
     # Merging with feb daywise avg 
-    df_feb=pd.read_csv('../processed_data/febdaywiseavg.csv')
+    df_feb=pd.read_csv('../filedata/febdaywiseavg.csv')
     df_merged=pd.merge(df_merged,df_feb,on='safegraph_place_id')
     df_merged['feb_daywise_avg']=df_merged['feb_daywise_avg'].apply(lambda x: x[0:7]*n_weeks)
     # Calculating Ratio, Delta and closing dates
@@ -48,7 +48,7 @@ def compile_master():
     df_merged=pd.merge(df_merged,w1, on='safegraph_place_id')
     # Adding County SIP dates
     ## Adding County name
-    county= pd.read_csv('../processed_data/closure_data/countystateclosure.csv')
+    county= pd.read_csv('../filedata/closure_data/countystateclosure.csv')
     df_merged['FIPS']=df_merged['poi_cbg'].apply(str).apply(lambda x:x[0:5])
 
     a=pd.merge(df_merged,county[['FIPS','County','County_Shelter_In_Place_Policy']],on='FIPS',how='left')
@@ -64,7 +64,7 @@ def compile_master():
     ### Adding Loyalty ###
 
     ## Loyalty Calculations
-    df_concat= pd.read_csv('../processed_data/master_dataset/relatedbrandsfeb.csv')
+    df_concat= pd.read_csv('../filedata/master_dataset/relatedbrandsfeb.csv')
     brands_naics=a[['brands','naics_code']].drop_duplicates()
     safegraph_naics=a[['safegraph_place_id','naics_code']].drop_duplicates().reset_index()
     brands_naics=brands_naics[brands_naics['brands'].notna()]
@@ -83,7 +83,7 @@ def compile_master():
     ### Adding Social Distancing Metrics ###
 
     ## Adding to dataset
-    cbgwise =pd.read_csv('../processed_data/socialdistancingmetrics/cbgwise.csv')
+    cbgwise =pd.read_csv('../filedata/socialdistancingmetrics/cbgwise.csv')
     cbgwise.drop(['full_time_work_behavior_devices'],axis=1,inplace=True)
     a=pd.merge(a,cbgwise,on=['poi_cbg','date'],how='left',validate="m:1")
 

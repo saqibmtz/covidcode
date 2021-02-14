@@ -59,7 +59,7 @@ def monthlyavg():
     df_monthly_temp=pd.concat(df_monthly)
     df_monthly_temp.reset_index(drop=True,inplace=True)
     df_monthly_temp['date_range_start']=pd.to_datetime(df_monthly_temp['date_range_start'],unit='s').apply(lambda x:x.strftime('%B,%Y'))
-    df_monthly_temp.to_csv('../processed_data/visits_data/monthly_avg_visits_data.csv')
+    df_monthly_temp.to_csv('../filedata/visits_data/monthly_avg_visits_data.csv')
 def febdaywise():
     ## Feb Daywise Avg ##
     df_feb_p1= pd.read_csv("../../rawdata/monthly/Feb20-AllPatterns-PATTERNS-2020_02-2020-03-2/patterns-part1.csv")
@@ -76,7 +76,7 @@ def febdaywise():
     df_feb['feb_daywise_avg']=df_feb['feb_daywise_avg'].apply(lambda x:x[1:7]+x[0:1])
     n_weeks=8  # No of weeks we need to replicate
     df_feb['feb_daywise_avg']=df_feb['feb_daywise_avg'].apply(lambda x: x[0:7]*n_weeks)
-    df_feb.drop('visits_by_day',axis=1).to_csv('../processed_data/febdaywiseavg.csv')
+    df_feb.drop('visits_by_day',axis=1).to_csv('../filedata/febdaywiseavg.csv')
     
 ## Social Distancing metrics ####
    
@@ -100,7 +100,7 @@ def social_distancing_metrics():
     with Pool() as pool:
         df_database=pool.map(load_file,date_range)
     df_compiled=pd.concat(df_database)
-    df_compiled.to_csv('../processed_data/socialdistancingmetrics/cbgwise.csv',index=False)
+    df_compiled.to_csv('../filedata/socialdistancingmetrics/cbgwise.csv',index=False)
     
 ## Related Brands Feb. #####
 def read_files(file):
@@ -118,7 +118,7 @@ def related_brands():
     df_concat['related_brand']=df_concat['related_same_day_brand'].str[0]
     df_concat['related_brand_pct']=df_concat['related_same_day_brand'].str[1]
     df_concat.drop('related_same_day_brand',axis=1,inplace=True)\
-    df_concat.to_csv('../processed_data/master_dataset/relatedbrandsfeb.csv')
+    df_concat.to_csv('../filedata/master_dataset/relatedbrandsfeb.csv')
 
 #### Creating outside inside distribution ####
 
@@ -141,7 +141,7 @@ def outside_inside():
     
     files['pct_visits_same_cbg']=files.apply(pct_visits,axis=1)
     files=files.drop(['poi_cbg','visitor_home_cbgs'],axis=1)
-    files.to_csv('../processed_data/master_dataset/samecbgvisits_feb.csv')
+    files.to_csv('../filedata/master_dataset/samecbgvisits_feb.csv')
     #Same Tract
     files=files[files['poi_cbg'].notna()].reset_index(drop=True)
     files['poi_tract']=files['poi_cbg'].apply(lambda x:str((int(x))).zfill(12)[:-1])
@@ -153,7 +153,7 @@ def outside_inside():
     files['visitor_tract']=files['visitor_cbg'].apply(lambda x: x[:-1])
     files['same_tract']=files['poi_tract']==files['visitor_tract']
     f=files.groupby('safegraph_place_id').apply(lambda x: x['visitor_count'][x['same_tract']].sum()/x['visitor_count'].sum())
-    f.reset_index().rename({0:'pct_same_tract'},axis=1).to_csv('../processed_data/master_dataset/sametractvisits_feb.csv')
+    f.reset_index().rename({0:'pct_same_tract'},axis=1).to_csv('../filedata/master_dataset/sametractvisits_feb.csv')
 
     ### 
 
