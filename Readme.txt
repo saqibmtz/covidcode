@@ -1,7 +1,14 @@
 
 To pre-process the data use main_download.py
-To generate result tables, add master_06.csv to filedata/ and run main.R
 
+To generate result tables in the paper run main.R
+To generate appendix tables/Figures
+    - run RobustnessTable.r for the tables
+    - run eventStudy.r  for the event study figure
+    - FiguresIV.r for plots of the instrumental variables with census covariates
+
+
+The data and the code is organised using the following folder structure
 
 ***************
 File Structure
