@@ -1,7 +1,7 @@
 
 To pre-process the data use main_download.py
 
-To generate result tables in the paper run main.R
+To generate the tables in the paper run main.R
 To generate appendix tables/Figures
     - run RobustnessTable.r for the tables
     - run eventStudy.r  for the event study figure
