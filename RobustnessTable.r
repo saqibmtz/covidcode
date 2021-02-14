@@ -10,11 +10,13 @@ data_nb$date = ymd(data_nb$date)
 data_nb$countyName = as.factor(data_nb$countyName)
 
 
-####################################
-###### 1. Removing Clusters #########
-######################################
+#####################################
+###### 1. Removing Clusters ##########
+#######################################
 
 cluster_data = fread("filedata/cluster_004.csv")
+## To generate the file run clustering.py ##
+
 data_nb = left_join(data_nb, cluster_data)
 print(c("Percentage outside of Cluster ", sum(!data_nb$inCluster)/dim(data_nb)[1]))
 data_nb2 = data_nb %>% filter(!inCluster)
