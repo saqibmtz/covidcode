@@ -1,5 +1,5 @@
 # setwd("covid")
-
+#
 
 ## !!!Two variables with "loyalty" name in the dataset. Dropping one in process_data. Check with new data ##
 
