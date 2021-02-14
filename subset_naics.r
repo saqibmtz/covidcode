@@ -1,4 +1,5 @@
 ## @desc - Find NAICS essential categories and subset to exclude them 
+##         (Essential categories if >70% stores stay open)
 ## @return - Dataset dropping essential category businesses 
 ##
 subset_naics =  function(data){

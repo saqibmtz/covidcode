@@ -1,5 +1,5 @@
-# Set working directory to shared/saqib/covid/covid on BEAR
-# setwd("/shared/saqib/covid/covid")
+# setwd("covid")
+
 
 ## !!!Two variables with "loyalty" name in the dataset. Dropping one in process_data. Check with new data ##
 
@@ -33,11 +33,11 @@ naics_essentail_cutoff = .30   #Percent closed threshold to identify essential s
     naics_codes = fread("rawdata/Naics_2017.csv") %>% select(Seq,naics_code,naics_name) 
     naics_codes$naics_code = as.integer(naics_codes$naics_code)
 
-    data = fread("filedata/master_06_new.csv") %>% as.data.frame()
+    #data = fread("filedata/master_06_new.csv") %>% as.data.frame()
+    data = fread("filedata/master_06.csv") %>% as.data.frame()
 
 
-
-    ### 2.2  Subsetting the data to dates and including useful covariates ##########
+    ### 2.2  Subsetting the data to the required dates and including useful covariates ##########
     names(data)[names(data) == "poi_cbg" ] = "CBGFIPS"
     data = data[,-25] %>% select(safegraph_place_id,date,brands,postal_code,
                             naics_code,County_Shelter_In_Place_Policy,feb_daywise_avg,visits_by_date,closed_or_not,

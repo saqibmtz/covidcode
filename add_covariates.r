@@ -1,6 +1,8 @@
 ## @desc -  Adding useful covriates to data
 ## @return - A list containing Data object with covriates and a list of identified Big Brands 
 add_covriates = function(data,pincodes){
+
+    ## Adding covariates
     data['BrandLocal'] = ifelse(data$brands=="",1,0)
     data['BrandNational'] = 1 - data$BrandLocal
     data['brands'] = ifelse(data$brands=="","LOCAL_BRAND",data$brands)
@@ -14,7 +16,7 @@ add_covriates = function(data,pincodes){
     data = data %>% group_by(safegraph_place_id) %>% mutate(Feb_Avg = mean(feb_daywise_avg))
 
 
-    #Adding Big Brands
+    #Identifying and adding Big Brands dummy
     data_date = data %>% filter(date == begin_date)
     big_brands = get_brand_distribution(data_date,threshold = 50,pincodes,state_threshold = 25,T)
     data['big_brands'] = ifelse(data$brands %in% big_brands$brands, T, F)

@@ -64,6 +64,6 @@ rm(naics_postal)
 
 }
 
-model5 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip + proption_BigBrands_naics_postal_open | newfactor + postal_code + date ,.)
-iv3 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip |  newfactor + postal_code + date | (proption_BigBrands_naics_postal_open  ~ BrandPostalProp),.)
-stargazer(model5,iv3, type = "text", covariate.labels = c("Avg Feb Traffic","Prop. Devices at home","Prop. Brach Est. Open","Prop. Branch Est. Open (fit)"))
+#model5 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip + proption_BigBrands_naics_postal_open | newfactor + postal_code + date ,.)
+#iv3 <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip |  newfactor + postal_code + date | (proption_BigBrands_naics_postal_open  ~ BrandPostalProp),.)
+#sstargazer(model5,iv3, type = "text", covariate.labels = c("Avg Feb Traffic","Prop. Devices at home","Prop. Brach Est. Open","Prop. Branch Est. Open (fit)"))

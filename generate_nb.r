@@ -1,6 +1,6 @@
 ## @descr - Subsetting for local stores 
 ## @param - Dataset
-## @return - Dataset containing only Local Establishments along 
+## @return - Dataset containing only Local Establishments along with interactions that are used as fixed effects and lagging data by a day
 generate_nb = function(filein = "filedata/preRegData_state.csv"){
     
     data = fread(filein)

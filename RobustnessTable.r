@@ -3,6 +3,8 @@
 ####################################
 
 
+## Generates robustness results for Models 7-10
+
 data_nb = fread("filedata/data_nb_state.csv")
 data_nb$date = ymd(data_nb$date)
 data_nb$countyName = as.factor(data_nb$countyName)
@@ -27,7 +29,7 @@ rm(data_nb2)
 ##### 2. Brand Closure Variance ####
 #####################################
 # Restricting to brands that have low daily variance in opening/closing 
-#source(file = "code/VarianceAnalysis.r")
+source(file = "code/VarianceAnalysis.r")
 
 data_nb = fread("temp/data_nb_state_lowVar.csv")
 ols_low_var <- data_nb %>% felm(open ~ proption_BigBrands_naics_postal_open + Feb_Avg + prop_home_device_zip | newfactor + countyDate + postal_code  | 0 |countyName,.)
@@ -41,6 +43,7 @@ iv_low_var <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip |  newfact
 #######################################
 
 #Restricting to establishments that have dis-similar customers from brand establishments
+source(file = "code/customerSimilarity.r")
 
 community_cosine_dissimilar = fread("filedata/cosineDissimilar.csv")
 data_nb = fread("filedata/data_nb_state.csv")
@@ -53,7 +56,7 @@ iv_disimilar <- data_nb %>% felm(open ~  Feb_Avg + prop_home_device_zip |  newfa
 
 
 #####################################
-####### 4. customers #####
+####### 4. Customers Disimilarity#####
 #######################################
 
 #Restricting to establishments that have dis-similar customers from brand establishments
