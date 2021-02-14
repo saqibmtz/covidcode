@@ -117,11 +117,9 @@ library(tidyr)
     ### 3.2 Table 2 (Main OLS and IV)  ########
     source(file = "code/main_IV_Reg.R")
 
-    ### 3.3 Table 3 (Moderation)  #####
-    #source(file="code/moderation_Reg.R")
-    
 
-    ### 3.4 Fixing Variable Names ####
+
+    ### 3.3 Fixing Variable Names ####
     source(file = "code/fix_names.r")
     fix_names_summary("tables/table1a.tex")
     fix_names_summary("tables/table1b.tex")
