@@ -1,8 +1,13 @@
+### This file generates the tables in the paper ###
+
 # setwd("covid")
 #
 
 ## !!!Two variables with "loyalty" name in the dataset. Dropping one in process_data. Check with new data ##
 
+#############################
+### 0. Loading Libraries ###
+#############################
 library(data.table)
 library(lubridate)
 library(dplyr)
@@ -17,11 +22,15 @@ library(texreg)
 library(gridExtra)
 library(tidyr)
 
-## 1. Defining Global Variables ##
-begin_date = ymd("2020-03-01")
-end_date = ymd("2020-04-15")
-naics_digit = 3 ## NAICS level used to aggregate places
-naics_essentail_cutoff = .30   #Percent closed threshold to identify essential services
+
+######################################
+### 1. Defining Global Variables ####
+####################################
+
+    begin_date = ymd("2020-03-01")
+    end_date = ymd("2020-04-15")
+    naics_digit = 3 ## NAICS level used to aggregate places
+    naics_essentail_cutoff = .30   #Percent closed threshold to identify essential services
 
 
 #######################################
