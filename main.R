@@ -125,7 +125,7 @@ library(tidyr)
     fix_names_summary("tables/table1b.tex")
     fix_names("tables/table2a.tex")
     fix_names("tables/table2b.tex")
-    fix_names("tables/table3.tex")
-    fix_names("tables/table4.tex")
+   
+    #fix_names("tables/table4.tex") ## Robustness table 
 
 
